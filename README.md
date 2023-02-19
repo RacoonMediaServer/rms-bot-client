@@ -1,2 +1,3 @@
-# rms-template
-Template repository for microservices
+# rms-bot-client
+
+Device's chat bot business logic
