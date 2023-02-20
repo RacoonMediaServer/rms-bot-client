@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/config"
-	"github.com/RacoonMediaServer/rms-bot-client/internal/db"
+	"github.com/RacoonMediaServer/rms-bot-client/internal/session"
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
 	"github.com/urfave/cli/v2"
 	"go-micro.dev/v4"
@@ -48,15 +48,14 @@ func main() {
 		_ = logger.Init(logger.WithLevel(logger.DebugLevel))
 	}
 
+	cfg := config.Config()
+	serverSession := session.New(cfg.Remote, cfg.Device)
+	defer serverSession.Shutdown()
+
 	_ = servicemgr.NewServiceFactory(service)
 
-	_, err := db.Connect(config.Config().Database)
-	if err != nil {
-		logger.Fatalf("Connect to database failed: %s", err)
-	}
-
 	// регистрируем хендлеры
-	//if err := rms_bot.RegisterRmsBotHandler(service.Server(), bot); err != nil {
+	//if err := rms_bot_client.RegisterRmsBotClientHandler(service.Server(), bot); err != nil {
 	//	logger.Fatalf("Register service failed: %s", err)
 	//}
 

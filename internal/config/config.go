@@ -2,9 +2,18 @@ package config
 
 import "github.com/RacoonMediaServer/rms-packages/pkg/configuration"
 
+// Remote is a settings for connection to rms-bot-server service
+type Remote struct {
+	Scheme string
+	Host   string
+	Port   int
+	Path   string
+}
+
 // Configuration represents entire service configuration
 type Configuration struct {
-	Database configuration.Database
+	Device string
+	Remote Remote
 }
 
 var config Configuration
