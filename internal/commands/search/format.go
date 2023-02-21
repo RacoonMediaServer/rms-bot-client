@@ -51,7 +51,7 @@ func formatDescription(d string) string {
 	return split[0] + "..."
 }
 
-func formatMovieMessage(mov *rms_library.FoundMovie) *communication.BotMessage {
+func (s *searchCommand) formatMovieMessage(mov *rms_library.FoundMovie) *communication.BotMessage {
 	m := &communication.BotMessage{}
 	if mov.Info.Poster != "" {
 		m.Attachment = &communication.Attachment{
@@ -99,7 +99,7 @@ func formatMovieMessage(mov *rms_library.FoundMovie) *communication.BotMessage {
 
 	var buf bytes.Buffer
 	if err := parsedTemplates.ExecuteTemplate(&buf, "movie", &ui); err != nil {
-		logger.Errorf("execute template failed")
+		s.l.Logf(logger.ErrorLevel, "execute template failed: %s", err)
 	}
 	m.Text = buf.String()
 	return m

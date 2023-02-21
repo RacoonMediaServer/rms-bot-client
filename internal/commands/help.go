@@ -6,6 +6,7 @@ import (
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
+	"go-micro.dev/v4/logger"
 	"sort"
 )
 
@@ -30,7 +31,9 @@ func (h helpCommand) Do(ctx context.Context, arguments command.Arguments) (done 
 	result := ""
 	for _, t := range titles {
 		cmd := commandMap[t]
-		result += fmt.Sprintf("/%s %s - %s\n", cmd.ID, cmd.Title, cmd.Help)
+		if !cmd.Internal {
+			result += fmt.Sprintf("/%s %s - %s\n", cmd.ID, cmd.Title, cmd.Help)
+		}
 	}
 	return true, []*communication.BotMessage{
 		{
@@ -39,6 +42,6 @@ func (h helpCommand) Do(ctx context.Context, arguments command.Arguments) (done 
 	}
 }
 
-func newHelpCommand(factory servicemgr.ServiceFactory) command.Command {
+func newHelpCommand(factory servicemgr.ServiceFactory, l logger.Logger) command.Command {
 	return &helpCommand{}
 }

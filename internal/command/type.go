@@ -13,4 +13,7 @@ type Type struct {
 
 	// Factory can create commands of specific type
 	Factory Factory
+
+	// Internal means that the command is not visible via /help
+	Internal bool
 }

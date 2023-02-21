@@ -43,7 +43,7 @@ func (c *chat) processMessage(msg *communication.UserMessage) {
 
 		cmdID := ""
 		cmdID, args = command.Parse(msg.Text)
-		cmd, err := commands.NewCommand(cmdID, c.f)
+		cmd, err := commands.NewCommand(cmdID, c.f, c.l)
 		if err != nil {
 			c.replyText("Неизвестная команда, всегда можно набрать /help...")
 			return

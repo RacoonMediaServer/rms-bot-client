@@ -22,6 +22,7 @@ var Command command.Type = command.Type{
 
 type searchCommand struct {
 	f servicemgr.ServiceFactory
+	l logger.Logger
 }
 
 func replyText(text string) []*communication.BotMessage {
@@ -39,19 +40,19 @@ func (s *searchCommand) Do(ctx context.Context, arguments command.Arguments) (do
 
 	resp, err := s.f.NewLibrary().SearchMovie(ctx, &rms_library.SearchMovieRequest{Text: arguments.String(), Limit: searchMoviesLimit}, client.WithRequestTimeout(1*time.Minute))
 	if err != nil {
-		logger.Errorf("searchMovie failed: %s", err)
+		s.l.Logf(logger.ErrorLevel, "SearchMovie failed: %s", err)
 		return true, replyText("Что-то пошло не так...")
 	}
-	logger.Infof("Got %d results", len(resp.Movies))
+	s.l.Logf(logger.InfoLevel, "Got %d results", len(resp.Movies))
 
 	var result []*communication.BotMessage
 	for _, mov := range resp.Movies {
-		result = append(result, formatMovieMessage(mov))
+		result = append(result, s.formatMovieMessage(mov))
 	}
 
 	return true, result
 }
 
-func New(f servicemgr.ServiceFactory) command.Command {
-	return &searchCommand{f: f}
+func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
+	return &searchCommand{f: f, l: l.Fields(map[string]interface{}{"command": "search"})}
 }
