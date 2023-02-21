@@ -72,7 +72,7 @@ func (s *Session) process() {
 					break handleMessages
 				}
 			case <-s.ctx.Done():
-				s.l.Logf(logger.DebugLevel, "Shutdowning...")
+				s.l.Logf(logger.DebugLevel, "Shutdown...")
 				_ = s.conn.Close()
 				return
 			case <-ctx.Done():
