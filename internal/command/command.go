@@ -4,7 +4,11 @@ import (
 	"context"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	"strings"
+	"time"
 )
+
+// LongRequestTimeout is a default timeout for long-possible requests
+const LongRequestTimeout = 1 * time.Minute
 
 // Command represents chat bot command
 type Command interface {
