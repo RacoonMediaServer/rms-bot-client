@@ -4,6 +4,9 @@ import (
 	"errors"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/download"
+	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/downloads"
+	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/library"
+	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/remove"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/search"
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
 	"go-micro.dev/v4/logger"
@@ -18,6 +21,9 @@ func init() {
 	commandMap[helpCommandType.ID] = helpCommandType
 	commandMap[search.Command.ID] = search.Command
 	commandMap[download.Command.ID] = download.Command
+	commandMap[library.Command.ID] = library.Command
+	commandMap[remove.Command.ID] = remove.Command
+	commandMap[downloads.Command.ID] = downloads.Command
 }
 
 func NewCommand(commandID string, f servicemgr.ServiceFactory, l logger.Logger) (command.Command, error) {

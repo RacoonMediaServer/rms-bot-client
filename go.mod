@@ -3,7 +3,7 @@ module github.com/RacoonMediaServer/rms-bot-client
 go 1.20
 
 require (
-	github.com/RacoonMediaServer/rms-packages v1.5.2
+	github.com/RacoonMediaServer/rms-packages v1.6.3
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/websocket v1.4.2
 	github.com/urfave/cli/v2 v2.3.0

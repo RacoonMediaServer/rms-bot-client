@@ -61,28 +61,10 @@ func (s *searchCommand) formatMovieMessage(mov *rms_library.FoundMovie) *communi
 		}
 	}
 
-	m.Buttons = append(m.Buttons, &communication.Button{Title: "Скачать", Command: "/download " + mov.Id})
-	m.KeyboardStyle = communication.KeyboardStyle_Message
+	m.Buttons = append(m.Buttons, &communication.Button{Title: "Скачать", Command: "/download auto " + mov.Id})
+	m.Buttons = append(m.Buttons, &communication.Button{Title: "Выбрать раздачу", Command: "/download select " + mov.Id})
 
-	if mov.Info.Type == rms_library.MovieType_TvSeries {
-		if mov.Info.Seasons != nil {
-			for s := 1; s <= int(*mov.Info.Seasons); s++ {
-				downloaded := false
-				for _, d := range mov.SeasonsDownloaded {
-					if int(d) == s {
-						downloaded = true
-						break
-					}
-				}
-				if !downloaded {
-					m.Buttons = append(m.Buttons, &communication.Button{
-						Title:   fmt.Sprintf("Сезон %d", s),
-						Command: fmt.Sprintf("/download %s %d", mov.Id, s),
-					})
-				}
-			}
-		}
-	}
+	m.KeyboardStyle = communication.KeyboardStyle_Message
 
 	var ui struct {
 		Title       string

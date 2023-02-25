@@ -50,9 +50,12 @@ func (s *searchCommand) Do(ctx context.Context, arguments command.Arguments) (do
 		result = append(result, s.formatMovieMessage(mov))
 	}
 
-	return true, result
+	return false, result
 }
 
 func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
-	return &searchCommand{f: f, l: l.Fields(map[string]interface{}{"command": "search"})}
+	return &searchCommand{
+		f: f,
+		l: l.Fields(map[string]interface{}{"command": "search"}),
+	}
 }
