@@ -44,14 +44,14 @@ func (d *downloadsCommand) Do(ctx context.Context, arguments command.Arguments) 
 		return d.doUp(ctx, arguments[1:])
 	}
 
-	return true, replyText("Не удалось распознать параметры команды")
+	return true, replyText(command.ParseArgumentsFailed)
 }
 
 func (d *downloadsCommand) doList(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	resp, err := d.f.NewTorrent().GetTorrents(ctx, &rms_torrent.GetTorrentsRequest{IncludeDoneTorrents: false})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Get torrents failed: %s", err)
-		return true, replyText("Что-то пошло не так...")
+		return true, replyText(command.SomethingWentWrong)
 	}
 	if len(resp.Torrents) == 0 {
 		return true, replyText("Нет активных загрузок")
@@ -65,15 +65,15 @@ func (d *downloadsCommand) doList(ctx context.Context, arguments command.Argumen
 
 func (d *downloadsCommand) doRemove(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	if len(arguments) != 1 {
-		return true, replyText("Не удалось распознать параметры команды")
+		return true, replyText(command.ParseArgumentsFailed)
 	}
 
 	_, err := d.f.NewTorrent().RemoveTorrent(ctx, &rms_torrent.RemoveTorrentRequest{Id: arguments[0]})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Remove torrent failed: %s", err)
-		return true, replyText("Что-то пошло не так...")
+		return true, replyText(command.SomethingWentWrong)
 	}
-	return true, replyText("Удалено")
+	return true, replyText(command.Removed)
 }
 
 func (d *downloadsCommand) doUp(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
@@ -84,7 +84,7 @@ func (d *downloadsCommand) doUp(ctx context.Context, arguments command.Arguments
 	_, err := d.f.NewTorrent().UpPriority(ctx, &rms_torrent.UpPriorityRequest{Id: arguments[0]})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Up torrent failed: %s", err)
-		return true, replyText("Что-то пошло не так...")
+		return true, replyText(command.SomethingWentWrong)
 	}
 	return true, replyText("Приоритет изменился")
 }

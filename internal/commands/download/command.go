@@ -57,7 +57,7 @@ func (d *downloadCommand) Do(ctx context.Context, arguments command.Arguments) (
 
 func (d *downloadCommand) doInitial(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	if len(arguments) < 2 {
-		return true, replyText("Параметры команды не распознаны")
+		return true, replyText(command.ParseArgumentsFailed)
 	}
 	switch arguments[0] {
 	case "auto":
@@ -65,7 +65,7 @@ func (d *downloadCommand) doInitial(ctx context.Context, arguments command.Argum
 	case "select":
 		d.download = d.downloadSelect
 	default:
-		return true, replyText("Не удалось распознать параметры команды")
+		return true, replyText(command.ParseArgumentsFailed)
 	}
 
 	d.id = arguments[1]
@@ -73,11 +73,11 @@ func (d *downloadCommand) doInitial(ctx context.Context, arguments command.Argum
 	result, err := d.f.NewLibrary().GetMovie(ctx, &rms_library.GetMovieRequest{ID: d.id})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Retrieve info about media failed: %s", err)
-		return true, replyText("Что-то пошло не так...")
+		return true, replyText(command.SomethingWentWrong)
 	}
 	if result.Result == nil {
 		d.l.Log(logger.WarnLevel, "Movie not found")
-		return true, replyText("Что-то пошло не так...")
+		return true, replyText(command.SomethingWentWrong)
 	}
 
 	mov := result.Result
@@ -118,7 +118,7 @@ func (d *downloadCommand) downloadAuto(ctx context.Context, arguments command.Ar
 	resp, err := d.f.NewLibrary().DownloadMovieAuto(ctx, req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "request to library failed: %s", err)
-		return true, replyText("Что-то пошло не так...")
+		return true, replyText(command.SomethingWentWrong)
 	}
 
 	if !resp.Found {
@@ -144,10 +144,10 @@ func (d *downloadCommand) downloadSelect(ctx context.Context, arguments command.
 
 	resp, err := d.f.NewLibrary().FindMovieTorrents(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
-		return true, replyText("Что-то пошло не так...")
+		return true, replyText(command.SomethingWentWrong)
 	}
 	if len(resp.Results) == 0 {
-		return true, replyText("Ничего не найдено")
+		return true, replyText(command.NothingFound)
 	}
 
 	for _, t := range resp.Results {
@@ -189,7 +189,7 @@ func (d *downloadCommand) doChooseTorrent(ctx context.Context, args command.Argu
 	_, err = d.f.NewLibrary().DownloadTorrent(ctx, &rms_library.DownloadTorrentRequest{TorrentId: id}, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Download request failed: %s", err)
-		return true, replyText("Что-то пошло не так")
+		return true, replyText(command.SomethingWentWrong)
 	}
 
 	return true, replyText("Скачивание началось")

@@ -41,9 +41,13 @@ func (s *searchCommand) Do(ctx context.Context, arguments command.Arguments) (do
 	resp, err := s.f.NewLibrary().SearchMovie(ctx, &rms_library.SearchMovieRequest{Text: arguments.String(), Limit: searchMoviesLimit}, client.WithRequestTimeout(1*time.Minute))
 	if err != nil {
 		s.l.Logf(logger.ErrorLevel, "SearchMovie failed: %s", err)
-		return true, replyText("Что-то пошло не так...")
+		return true, replyText(command.SomethingWentWrong)
 	}
 	s.l.Logf(logger.InfoLevel, "Got %d results", len(resp.Movies))
+
+	if len(resp.Movies) == 0 {
+		return true, replyText(command.NothingFound)
+	}
 
 	var result []*communication.BotMessage
 	for _, mov := range resp.Movies {

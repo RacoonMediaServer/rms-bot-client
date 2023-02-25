@@ -59,11 +59,11 @@ func (s *libraryCommand) Do(ctx context.Context, arguments command.Arguments) (b
 	resp, err := s.f.NewLibrary().GetMovies(ctx, &rms_library.GetMoviesRequest{Type: &movieType})
 	if err != nil {
 		s.l.Logf(logger.ErrorLevel, "Get movies failed: %s", err)
-		return false, replyText("Что-то пошло не так...")
+		return false, replyText(command.SomethingWentWrong)
 	}
 
 	if len(resp.Result) == 0 {
-		return false, replyText("Ничего не найдено")
+		return false, replyText(command.NothingFound)
 	}
 
 	var messages []*communication.BotMessage

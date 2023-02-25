@@ -35,15 +35,15 @@ func replyText(text string) []*communication.BotMessage {
 
 func (r *removeCommand) Do(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	if len(arguments) != 1 {
-		return true, replyText("Не удалось распознать параметры команды")
+		return true, replyText(command.ParseArgumentsFailed)
 	}
 
 	if _, err := r.f.NewLibrary().DeleteMovie(ctx, &rms_library.DeleteMovieRequest{ID: arguments[0]}); err != nil {
 		r.l.Logf(logger.ErrorLevel, "Remove movie failed: %s", err)
-		return true, replyText("Что-то пошло не так...")
+		return true, replyText(command.SomethingWentWrong)
 	}
 
-	return true, replyText("Удалено")
+	return true, replyText(command.Removed)
 }
 
 func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
