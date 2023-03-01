@@ -69,9 +69,9 @@ func (bot *Bot) GetIdentificationCode(ctx context.Context, empty *emptypb.Empty,
 	return nil
 }
 
-func (bot *Bot) SendMessage(ctx context.Context, message *communication.BotMessage, empty *emptypb.Empty) error {
+func (bot *Bot) SendMessage(ctx context.Context, req *rms_bot_client.SendMessageRequest, empty *emptypb.Empty) error {
 	select {
-	case bot.srv.Send() <- message:
+	case bot.srv.Send() <- req.Message:
 	case <-ctx.Done():
 		return ctx.Err()
 	}
