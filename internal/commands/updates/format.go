@@ -29,6 +29,10 @@ func formatUpdate(u *rms_library.TvSeriesUpdate) *communication.BotMessage {
 		Command: "/download auto " + u.Id,
 	})
 	msg.Buttons = append(msg.Buttons, &communication.Button{
+		Title:   "Скачать быстрее",
+		Command: "/download faster " + u.Id,
+	})
+	msg.Buttons = append(msg.Buttons, &communication.Button{
 		Title:   "Выбрать раздачу",
 		Command: "/download select" + u.Id,
 	})

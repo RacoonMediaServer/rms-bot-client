@@ -38,6 +38,7 @@ type downloadCommand struct {
 	state    state
 	stateMap map[state]doFunc
 	download doFunc
+	faster   bool
 	id       string
 	season   *uint
 	torrents []string
@@ -62,8 +63,14 @@ func (d *downloadCommand) doInitial(ctx context.Context, arguments command.Argum
 	switch arguments[0] {
 	case "auto":
 		d.download = d.downloadAuto
+
+	case "faster":
+		d.download = d.downloadAuto
+		d.faster = true
+
 	case "select":
 		d.download = d.downloadSelect
+
 	default:
 		return true, replyText(command.ParseArgumentsFailed)
 	}
@@ -109,7 +116,10 @@ func (d *downloadCommand) doInitial(ctx context.Context, arguments command.Argum
 }
 
 func (d *downloadCommand) downloadAuto(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
-	req := &rms_library.DownloadMovieAutoRequest{Id: d.id}
+	req := &rms_library.DownloadMovieAutoRequest{
+		Id:     d.id,
+		Faster: d.faster,
+	}
 	if d.season != nil {
 		season := uint32(*d.season)
 		req.Season = &season
