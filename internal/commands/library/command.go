@@ -66,9 +66,9 @@ func (s *libraryCommand) Do(ctx context.Context, arguments command.Arguments) (b
 		return false, replyText(command.NothingFound)
 	}
 
-	var messages []*communication.BotMessage
-	for _, r := range resp.Result {
-		messages = append(messages, formatMovie(r))
+	messages := make([]*communication.BotMessage, len(resp.Result))
+	for i, r := range resp.Result {
+		messages[len(messages)-i-1] = formatMovie(r)
 	}
 	return false, messages
 }
