@@ -49,9 +49,10 @@ func (s *searchCommand) Do(ctx context.Context, arguments command.Arguments) (do
 		return true, replyText(command.NothingFound)
 	}
 
-	var result []*communication.BotMessage
-	for _, mov := range resp.Movies {
-		result = append(result, s.formatMovieMessage(mov))
+	// выводим в обратном порядке,чтобы не мотать ленту в тг
+	result := make([]*communication.BotMessage, len(resp.Movies))
+	for i, mov := range resp.Movies {
+		result[len(result)-i-1] = s.formatMovieMessage(mov)
 	}
 
 	return false, result
