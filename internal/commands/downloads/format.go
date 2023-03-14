@@ -22,10 +22,12 @@ func formatTorrent(t *rms_torrent.TorrentInfo) *communication.BotMessage {
 		Command: "/downloads remove " + t.Id,
 	})
 
-	msg.Buttons = append(msg.Buttons, &communication.Button{
-		Title:   "Повысить приоритет",
-		Command: "/downloads up " + t.Id,
-	})
+	if t.Status != rms_torrent.Status_Downloading {
+		msg.Buttons = append(msg.Buttons, &communication.Button{
+			Title:   "Повысить приоритет",
+			Command: "/downloads up " + t.Id,
+		})
+	}
 
 	return &msg
 }
