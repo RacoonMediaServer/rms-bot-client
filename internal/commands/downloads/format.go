@@ -13,7 +13,7 @@ func formatTorrent(t *rms_torrent.TorrentInfo) *communication.BotMessage {
 	msg.Text += fmt.Sprintf("<b>Статус</b>: <i>%s</i>", statusToString(t.Status))
 	if t.Status == rms_torrent.Status_Downloading {
 		msg.Text += fmt.Sprintf("\n<b>Прогресс</b>: %0.2f %%\n", t.Progress)
-		msg.Text += fmt.Sprintf("<b>Примерно осталось</b>: %s\n", time.Duration(t.Estimate))
+		msg.Text += fmt.Sprintf("<b>Примерно осталось</b>: %s\n", time.Duration(t.RemainingTime))
 	}
 	msg.KeyboardStyle = communication.KeyboardStyle_Message
 
