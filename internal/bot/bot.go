@@ -7,7 +7,6 @@ import (
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
 	"go-micro.dev/v4/logger"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"sync"
 )
 
@@ -51,7 +50,6 @@ func New(server Server, f servicemgr.ServiceFactory) *Bot {
 func (bot *Bot) GetIdentificationCode(ctx context.Context, empty *emptypb.Empty, response *rms_bot_client.GetIdentificationCodeResponse) error {
 	msg := &communication.BotMessage{}
 	msg.Type = communication.MessageType_AcquiringCode
-	msg.Timestamp = timestamppb.Now()
 
 	select {
 	case bot.srv.Send() <- msg:
