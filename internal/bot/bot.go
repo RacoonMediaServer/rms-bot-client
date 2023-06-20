@@ -68,6 +68,7 @@ func (bot *Bot) GetIdentificationCode(ctx context.Context, empty *emptypb.Empty,
 }
 
 func (bot *Bot) SendMessage(ctx context.Context, req *rms_bot_client.SendMessageRequest, empty *emptypb.Empty) error {
+	bot.l.Logf(logger.InfoLevel, "External outgoing message: '%s'", req.Message.Text)
 	select {
 	case bot.srv.Send() <- req.Message:
 	case <-ctx.Done():
