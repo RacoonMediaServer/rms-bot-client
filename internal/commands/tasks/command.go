@@ -84,8 +84,9 @@ func (n *tasksCommand) handleSnoozeCommand(ctx context.Context, arguments comman
 	}
 
 	n.id = arguments[1]
+	n.state = stateWaitSnoozeDate
 
-	return true, []*communication.BotMessage{composePickSnoozeDateMessage()}
+	return true, []*communication.BotMessage{pickSnoozeDateMessage}
 }
 
 func (n *tasksCommand) handleDoneCommand(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
@@ -100,18 +101,18 @@ func (n *tasksCommand) handleDoneCommand(ctx context.Context, arguments command.
 		return true, replyText(command.SomethingWentWrong)
 	}
 
-	return true, []*communication.BotMessage{composePickSnoozeDateMessage()}
+	return true, replyText("Задача завершена")
 }
 
 func (n *tasksCommand) stateWaitTaskText(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	n.title = arguments.String()
 	n.state = stateWaitTaskDate
 
-	return false, []*communication.BotMessage{composePickTaskDateMessage()}
+	return false, []*communication.BotMessage{pickTaskDateMessage}
 }
 
 func (n *tasksCommand) stateWaitTaskDate(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
-	date, err := parseDate(arguments.String())
+	date, err := parseDoneDate(arguments.String())
 	if err != nil {
 		return false, replyText("Не удалось распарсить дату")
 	}
@@ -132,7 +133,7 @@ func (n *tasksCommand) stateWaitTaskDate(ctx context.Context, arguments command.
 }
 
 func (n *tasksCommand) stateWaitSnoozeDate(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
-	date, err := time.Parse(obsidianDateFormat, arguments.String())
+	date, err := parseSnoozeDate(arguments.String())
 	if err != nil {
 		return false, replyText("Не удалось распарсить дату")
 	}
