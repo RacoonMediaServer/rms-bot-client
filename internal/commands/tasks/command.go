@@ -86,7 +86,7 @@ func (n *tasksCommand) handleSnoozeCommand(ctx context.Context, arguments comman
 	n.id = arguments[1]
 	n.state = stateWaitSnoozeDate
 
-	return true, []*communication.BotMessage{pickSnoozeDateMessage}
+	return false, []*communication.BotMessage{pickSnoozeDateMessage}
 }
 
 func (n *tasksCommand) handleDoneCommand(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
