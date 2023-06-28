@@ -26,7 +26,6 @@ func (bot *Bot) incomingMessage(msg *communication.UserMessage) {
 	chat, ok := bot.chats[msg.User]
 	if !ok {
 		fn := func(m *communication.BotMessage) {
-			m.Type = communication.MessageType_Interaction
 			m.User = msg.User
 			bot.srv.Send() <- m
 		}
