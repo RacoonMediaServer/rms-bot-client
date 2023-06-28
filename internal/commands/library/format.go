@@ -13,6 +13,7 @@ func formatMovie(mov *rms_library.Movie) *communication.BotMessage {
 	if mov.TvSeries != nil {
 		msg.Text += fmt.Sprintf("\nСкачано сезонов: %d", len(mov.TvSeries.Seasons))
 	}
+	msg.Text += fmt.Sprintf("\nЗанимаемое место: %.02f Гб", float64(mov.Size)/float64(1024))
 	msg.KeyboardStyle = communication.KeyboardStyle_Message
 	msg.Buttons = append(msg.Buttons, &communication.Button{
 		Title:   "Удалить",
