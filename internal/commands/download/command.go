@@ -29,7 +29,7 @@ const (
 	stateChooseTorrent
 )
 
-const requestTimeout = 1 * time.Minute
+const requestTimeout = 2 * time.Minute
 const maxTorrents uint32 = 8
 
 type downloadCommand struct {
