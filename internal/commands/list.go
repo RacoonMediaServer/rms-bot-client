@@ -9,6 +9,7 @@ import (
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/notes"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/remove"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/search"
+	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/snapshot"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/tasks"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/unlink"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/updates"
@@ -32,6 +33,7 @@ func init() {
 	commandMap[notes.Command.ID] = notes.Command
 	commandMap[tasks.Command.ID] = tasks.Command
 	commandMap[unlink.Command.ID] = unlink.Command
+	commandMap[snapshot.Command.ID] = snapshot.Command
 }
 
 func NewCommand(commandID string, f servicemgr.ServiceFactory, l logger.Logger) (command.Command, error) {
