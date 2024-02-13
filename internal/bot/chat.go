@@ -54,6 +54,7 @@ func (c *chat) processMessage(msg *communication.UserMessage) {
 		if c.e == nil || c.e.isDone() {
 			c.e = nil
 			if msg.Attachment != nil {
+				c.l.Logf(logger.InfoLevel, "Got file: %s [ %d bytes ]", msg.Attachment.MimeType, len(msg.Attachment.Content))
 				cmd, err := commands.NewCommand("file", c.f, c.l)
 				if err != nil {
 					c.replyText(command.SomethingWentWrong)
