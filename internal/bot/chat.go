@@ -53,10 +53,20 @@ func (c *chat) processMessage(msg *communication.UserMessage) {
 	} else {
 		if c.e == nil || c.e.isDone() {
 			c.e = nil
-			c.replyText("Необходимо указать команду. Например: /help")
-			return
+			if msg.Attachment != nil {
+				cmd, err := commands.NewCommand("file", c.f, c.l)
+				if err != nil {
+					c.replyText(command.SomethingWentWrong)
+					return
+				}
+				c.e = newExecution(cmd, c.send)
+			} else {
+				c.replyText("Необходимо указать команду. Например: /help")
+				return
+			}
 		}
 		args = command.ParseArguments(msg.Text)
 	}
-	c.e.args <- args
+
+	c.e.args <- &execArgs{args: args, attachment: msg.Attachment}
 }

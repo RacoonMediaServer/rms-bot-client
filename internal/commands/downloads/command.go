@@ -24,15 +24,7 @@ type downloadsCommand struct {
 	l logger.Logger
 }
 
-func replyText(text string) []*communication.BotMessage {
-	return []*communication.BotMessage{
-		{
-			Text: text,
-		},
-	}
-}
-
-func (d *downloadsCommand) Do(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
+func (d *downloadsCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
 	if len(arguments) == 0 {
 		return d.doList(ctx, arguments)
 	}
@@ -44,17 +36,17 @@ func (d *downloadsCommand) Do(ctx context.Context, arguments command.Arguments) 
 		return d.doUp(ctx, arguments[1:])
 	}
 
-	return true, replyText(command.ParseArgumentsFailed)
+	return true, command.ReplyText(command.ParseArgumentsFailed)
 }
 
 func (d *downloadsCommand) doList(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	resp, err := d.f.NewTorrent().GetTorrents(ctx, &rms_torrent.GetTorrentsRequest{IncludeDoneTorrents: false})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Get torrents failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 	if len(resp.Torrents) == 0 {
-		return true, replyText("Нет активных загрузок")
+		return true, command.ReplyText("Нет активных загрузок")
 	}
 	var messages []*communication.BotMessage
 	for _, t := range resp.Torrents {
@@ -65,28 +57,28 @@ func (d *downloadsCommand) doList(ctx context.Context, arguments command.Argumen
 
 func (d *downloadsCommand) doRemove(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	if len(arguments) != 1 {
-		return true, replyText(command.ParseArgumentsFailed)
+		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 
 	_, err := d.f.NewTorrent().RemoveTorrent(ctx, &rms_torrent.RemoveTorrentRequest{Id: arguments[0]})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Remove torrent failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
-	return true, replyText(command.Removed)
+	return true, command.ReplyText(command.Removed)
 }
 
 func (d *downloadsCommand) doUp(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	if len(arguments) != 1 {
-		return true, replyText("Не удалось распознать параметры команды")
+		return true, command.ReplyText("Не удалось распознать параметры команды")
 	}
 
 	_, err := d.f.NewTorrent().UpPriority(ctx, &rms_torrent.UpPriorityRequest{Id: arguments[0]})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Up torrent failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
-	return true, replyText("Приоритет изменился")
+	return true, command.ReplyText("Приоритет изменился")
 }
 
 func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {

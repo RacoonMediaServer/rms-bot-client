@@ -35,15 +35,7 @@ type notesCommand struct {
 	state state
 }
 
-func replyText(text string) []*communication.BotMessage {
-	return []*communication.BotMessage{
-		{
-			Text: text,
-		},
-	}
-}
-
-func (n *notesCommand) Do(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
+func (n *notesCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
 	switch n.state {
 	case stateInitial:
 		return n.stateInitial(ctx, arguments)
@@ -53,24 +45,24 @@ func (n *notesCommand) Do(ctx context.Context, arguments command.Arguments) (boo
 		return n.stateWaitText(ctx, arguments)
 	}
 
-	return true, replyText(command.SomethingWentWrong)
+	return true, command.ReplyText(command.SomethingWentWrong)
 }
 
 func (n *notesCommand) stateInitial(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	if len(arguments) == 0 {
 		n.state = stateWaitTitle
-		return false, replyText("Введите заголовок заметки")
+		return false, command.ReplyText("Введите заголовок заметки")
 	}
 
 	n.title = arguments.String()
 	n.state = stateWaitText
-	return false, replyText("Введите текст заметки")
+	return false, command.ReplyText("Введите текст заметки")
 }
 
 func (n *notesCommand) stateWaitTitle(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	n.title = arguments.String()
 	n.state = stateWaitText
-	return false, replyText("Введите текст заметки")
+	return false, command.ReplyText("Введите текст заметки")
 }
 
 func (n *notesCommand) stateWaitText(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
@@ -81,9 +73,9 @@ func (n *notesCommand) stateWaitText(ctx context.Context, arguments command.Argu
 	_, err := n.f.NewNotes().AddNote(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		n.l.Logf(logger.ErrorLevel, "Add note failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
-	return true, replyText("Заметка добавлена")
+	return true, command.ReplyText("Заметка добавлена")
 }
 
 func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {

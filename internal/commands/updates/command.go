@@ -25,22 +25,14 @@ type updatesCommand struct {
 	l logger.Logger
 }
 
-func replyText(text string) []*communication.BotMessage {
-	return []*communication.BotMessage{
-		{
-			Text: text,
-		},
-	}
-}
-
-func (u *updatesCommand) Do(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
+func (u *updatesCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
 	resp, err := u.f.NewLibrary().GetTvSeriesUpdates(ctx, &emptypb.Empty{}, client.WithRequestTimeout(command.LongRequestTimeout))
 	if err != nil {
 		u.l.Logf(logger.ErrorLevel, "Get TV-series updates failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 	if len(resp.Updates) == 0 {
-		return true, replyText("Новых доступных для загрузки сезонов не найдено")
+		return true, command.ReplyText("Новых доступных для загрузки сезонов не найдено")
 	}
 	var messages []*communication.BotMessage
 	for _, r := range resp.Updates {

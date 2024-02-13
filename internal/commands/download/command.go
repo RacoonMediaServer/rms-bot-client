@@ -44,21 +44,13 @@ type downloadCommand struct {
 	torrents []string
 }
 
-func replyText(text string) []*communication.BotMessage {
-	return []*communication.BotMessage{
-		{
-			Text: text,
-		},
-	}
-}
-
-func (d *downloadCommand) Do(ctx context.Context, arguments command.Arguments) (done bool, messages []*communication.BotMessage) {
+func (d *downloadCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (done bool, messages []*communication.BotMessage) {
 	return d.stateMap[d.state](ctx, arguments)
 }
 
 func (d *downloadCommand) doInitial(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	if len(arguments) < 2 {
-		return true, replyText(command.ParseArgumentsFailed)
+		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 	switch arguments[0] {
 	case "auto":
@@ -72,7 +64,7 @@ func (d *downloadCommand) doInitial(ctx context.Context, arguments command.Argum
 		d.download = d.downloadSelect
 
 	default:
-		return true, replyText(command.ParseArgumentsFailed)
+		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 
 	d.id = arguments[1]
@@ -80,11 +72,11 @@ func (d *downloadCommand) doInitial(ctx context.Context, arguments command.Argum
 	result, err := d.f.NewLibrary().GetMovie(ctx, &rms_library.GetMovieRequest{ID: d.id})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Retrieve info about media failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 	if result.Result == nil {
 		d.l.Log(logger.WarnLevel, "Movie not found")
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 
 	mov := result.Result
@@ -128,18 +120,18 @@ func (d *downloadCommand) downloadAuto(ctx context.Context, arguments command.Ar
 	resp, err := d.f.NewLibrary().DownloadMovieAuto(ctx, req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "request to library failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 
 	if !resp.Found {
-		return true, replyText("Не удалось найти подходящую раздачу")
+		return true, command.ReplyText("Не удалось найти подходящую раздачу")
 	}
 
 	if len(resp.Seasons) <= 1 {
-		return true, replyText("Скачивание началось")
+		return true, command.ReplyText("Скачивание началось")
 	}
 
-	return true, replyText("Удалось найти сезоны " + formatSeasons(resp.Seasons) + ". Скачивание началось")
+	return true, command.ReplyText("Удалось найти сезоны " + formatSeasons(resp.Seasons) + ". Скачивание началось")
 }
 
 func (d *downloadCommand) downloadSelect(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
@@ -154,10 +146,10 @@ func (d *downloadCommand) downloadSelect(ctx context.Context, arguments command.
 
 	resp, err := d.f.NewLibrary().FindMovieTorrents(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 	if len(resp.Results) == 0 {
-		return true, replyText(command.NothingFound)
+		return true, command.ReplyText(command.NothingFound)
 	}
 
 	for _, t := range resp.Results {
@@ -170,14 +162,14 @@ func (d *downloadCommand) downloadSelect(ctx context.Context, arguments command.
 
 func (d *downloadCommand) doChooseSeason(ctx context.Context, args command.Arguments) (bool, []*communication.BotMessage) {
 	if len(args) != 1 {
-		return false, replyText("Необходимо выбрать сезон")
+		return false, command.ReplyText("Необходимо выбрать сезон")
 	}
 	if args[0] == "Все" {
 		return d.download(ctx, args)
 	}
 	season, err := strconv.ParseUint(args[0], 10, 8)
 	if err != nil {
-		return false, replyText("Неверно указан номер сезона")
+		return false, command.ReplyText("Неверно указан номер сезона")
 	}
 	s := uint(season)
 	d.season = &s
@@ -187,11 +179,11 @@ func (d *downloadCommand) doChooseSeason(ctx context.Context, args command.Argum
 
 func (d *downloadCommand) doChooseTorrent(ctx context.Context, args command.Arguments) (bool, []*communication.BotMessage) {
 	if len(args) != 1 {
-		return false, replyText("Необходимо выбрать раздачу")
+		return false, command.ReplyText("Необходимо выбрать раздачу")
 	}
 	no, err := strconv.ParseInt(args[0], 10, 8)
 	if err != nil || no <= 0 || no > int64(len(d.torrents)) {
-		return false, replyText("Неверно указан номер раздачи")
+		return false, command.ReplyText("Неверно указан номер раздачи")
 	}
 
 	id := d.torrents[no-1]
@@ -199,10 +191,10 @@ func (d *downloadCommand) doChooseTorrent(ctx context.Context, args command.Argu
 	_, err = d.f.NewLibrary().DownloadTorrent(ctx, &rms_library.DownloadTorrentRequest{TorrentId: id}, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Download request failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 
-	return true, replyText("Скачивание началось")
+	return true, command.ReplyText("Скачивание началось")
 }
 
 func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {

@@ -20,7 +20,7 @@ type unlinkCommand struct {
 	l logger.Logger
 }
 
-func (u *unlinkCommand) Do(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
+func (u *unlinkCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
 	messages := []*communication.BotMessage{
 		{
 			Text: "Управление отключено",

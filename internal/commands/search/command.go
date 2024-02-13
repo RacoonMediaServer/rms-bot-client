@@ -25,28 +25,20 @@ type searchCommand struct {
 	l logger.Logger
 }
 
-func replyText(text string) []*communication.BotMessage {
-	return []*communication.BotMessage{
-		{
-			Text: text,
-		},
-	}
-}
-
-func (s *searchCommand) Do(ctx context.Context, arguments command.Arguments) (done bool, messages []*communication.BotMessage) {
+func (s *searchCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (done bool, messages []*communication.BotMessage) {
 	if len(arguments) < 1 {
-		return false, replyText("Что ищем?")
+		return false, command.ReplyText("Что ищем?")
 	}
 
 	resp, err := s.f.NewLibrary().SearchMovie(ctx, &rms_library.SearchMovieRequest{Text: arguments.String(), Limit: searchMoviesLimit}, client.WithRequestTimeout(1*time.Minute))
 	if err != nil {
 		s.l.Logf(logger.ErrorLevel, "SearchMovie failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 	s.l.Logf(logger.InfoLevel, "Got %d results", len(resp.Movies))
 
 	if len(resp.Movies) == 0 {
-		return true, replyText(command.NothingFound)
+		return true, command.ReplyText(command.NothingFound)
 	}
 
 	// выводим в обратном порядке,чтобы не мотать ленту в тг

@@ -25,25 +25,17 @@ type removeCommand struct {
 	l logger.Logger
 }
 
-func replyText(text string) []*communication.BotMessage {
-	return []*communication.BotMessage{
-		{
-			Text: text,
-		},
-	}
-}
-
-func (r *removeCommand) Do(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
+func (r *removeCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
 	if len(arguments) != 1 {
-		return true, replyText(command.ParseArgumentsFailed)
+		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 
 	if _, err := r.f.NewLibrary().DeleteMovie(ctx, &rms_library.DeleteMovieRequest{ID: arguments[0]}); err != nil {
 		r.l.Logf(logger.ErrorLevel, "Remove movie failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 
-	return true, replyText(command.Removed)
+	return true, command.ReplyText(command.Removed)
 }
 
 func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {

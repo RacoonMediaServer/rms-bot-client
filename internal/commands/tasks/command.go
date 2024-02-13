@@ -38,15 +38,7 @@ type tasksCommand struct {
 	date  time.Time
 }
 
-func replyText(text string) []*communication.BotMessage {
-	return []*communication.BotMessage{
-		{
-			Text: text,
-		},
-	}
-}
-
-func (n *tasksCommand) Do(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
+func (n *tasksCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
 	switch n.state {
 	case stateInitial:
 		return n.stateInitial(ctx, arguments)
@@ -59,13 +51,13 @@ func (n *tasksCommand) Do(ctx context.Context, arguments command.Arguments) (boo
 
 	}
 
-	return true, replyText(command.SomethingWentWrong)
+	return true, command.ReplyText(command.SomethingWentWrong)
 }
 
 func (n *tasksCommand) stateInitial(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	if len(arguments) == 0 {
 		n.state = stateWaitTaskText
-		return false, replyText("Введите описание задачи")
+		return false, command.ReplyText("Введите описание задачи")
 	}
 
 	switch arguments[0] {
@@ -75,12 +67,12 @@ func (n *tasksCommand) stateInitial(ctx context.Context, arguments command.Argum
 		return n.handleDoneCommand(ctx, arguments)
 	}
 
-	return true, replyText(command.ParseArgumentsFailed)
+	return true, command.ReplyText(command.ParseArgumentsFailed)
 }
 
 func (n *tasksCommand) handleSnoozeCommand(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	if len(arguments) < 2 {
-		return true, replyText(command.ParseArgumentsFailed)
+		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 
 	n.id = arguments[1]
@@ -91,17 +83,17 @@ func (n *tasksCommand) handleSnoozeCommand(ctx context.Context, arguments comman
 
 func (n *tasksCommand) handleDoneCommand(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	if len(arguments) < 2 {
-		return true, replyText(command.ParseArgumentsFailed)
+		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 
 	req := rms_notes.DoneTaskRequest{Id: arguments[1]}
 	_, err := n.f.NewNotes().DoneTask(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		n.l.Logf(logger.ErrorLevel, "Done task failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 
-	return true, replyText("Задача завершена")
+	return true, command.ReplyText("Задача завершена")
 }
 
 func (n *tasksCommand) stateWaitTaskText(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
@@ -114,7 +106,7 @@ func (n *tasksCommand) stateWaitTaskText(ctx context.Context, arguments command.
 func (n *tasksCommand) stateWaitTaskDate(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	date, err := parseDoneDate(arguments.String())
 	if err != nil {
-		return false, replyText("Не удалось распарсить дату")
+		return false, command.ReplyText("Не удалось распарсить дату")
 	}
 
 	req := rms_notes.AddTaskRequest{Text: n.title}
@@ -126,16 +118,16 @@ func (n *tasksCommand) stateWaitTaskDate(ctx context.Context, arguments command.
 	_, err = n.f.NewNotes().AddTask(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		n.l.Logf(logger.ErrorLevel, "Add task failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 
-	return true, replyText("Задача добавлена")
+	return true, command.ReplyText("Задача добавлена")
 }
 
 func (n *tasksCommand) stateWaitSnoozeDate(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
 	date, err := parseSnoozeDate(arguments.String())
 	if err != nil {
-		return false, replyText("Не удалось распарсить дату")
+		return false, command.ReplyText("Не удалось распарсить дату")
 	}
 	dateString := date.Format(obsidianDateFormat)
 
@@ -144,10 +136,10 @@ func (n *tasksCommand) stateWaitSnoozeDate(ctx context.Context, arguments comman
 	_, err = n.f.NewNotes().SnoozeTask(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		n.l.Logf(logger.ErrorLevel, "Snooze task failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 
-	return true, replyText("Задача отложена")
+	return true, command.ReplyText("Задача отложена")
 }
 
 func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {

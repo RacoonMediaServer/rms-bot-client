@@ -20,7 +20,7 @@ var helpCommandType = command.Type{
 type helpCommand struct {
 }
 
-func (h helpCommand) Do(ctx context.Context, arguments command.Arguments) (done bool, messages []*communication.BotMessage) {
+func (h helpCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (done bool, messages []*communication.BotMessage) {
 	titles := make([]string, 0, len(commandMap))
 	for k, _ := range commandMap {
 		titles = append(titles, k)

@@ -23,15 +23,7 @@ type libraryCommand struct {
 	l logger.Logger
 }
 
-func replyText(text string) []*communication.BotMessage {
-	return []*communication.BotMessage{
-		{
-			Text: text,
-		},
-	}
-}
-
-func (s *libraryCommand) Do(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
+func (s *libraryCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
 	if len(arguments) == 0 {
 		msg := communication.BotMessage{Text: "Что ищем?"}
 		msg.KeyboardStyle = communication.KeyboardStyle_Chat
@@ -53,17 +45,17 @@ func (s *libraryCommand) Do(ctx context.Context, arguments command.Arguments) (b
 	case "Сериалы":
 		movieType = rms_library.MovieType_TvSeries
 	default:
-		return false, replyText("Неверная категория")
+		return false, command.ReplyText("Неверная категория")
 	}
 
 	resp, err := s.f.NewLibrary().GetMovies(ctx, &rms_library.GetMoviesRequest{Type: &movieType})
 	if err != nil {
 		s.l.Logf(logger.ErrorLevel, "Get movies failed: %s", err)
-		return false, replyText(command.SomethingWentWrong)
+		return false, command.ReplyText(command.SomethingWentWrong)
 	}
 
 	if len(resp.Result) == 0 {
-		return false, replyText(command.NothingFound)
+		return false, command.ReplyText(command.NothingFound)
 	}
 
 	messages := make([]*communication.BotMessage, len(resp.Result))

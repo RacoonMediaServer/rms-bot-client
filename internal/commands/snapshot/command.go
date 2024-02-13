@@ -27,22 +27,14 @@ type snapshotCommand struct {
 	mapNameToId map[string]uint32
 }
 
-func replyText(text string) []*communication.BotMessage {
-	return []*communication.BotMessage{
-		{
-			Text: text,
-		},
-	}
-}
-
-func (c *snapshotCommand) Do(ctx context.Context, arguments command.Arguments) (done bool, messages []*communication.BotMessage) {
+func (c *snapshotCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (done bool, messages []*communication.BotMessage) {
 	switch len(arguments) {
 	case 0:
 		return c.doListCameras(ctx)
 	case 1:
 		return c.doSnapshot(ctx, arguments[0])
 	default:
-		return true, replyText(command.ParseArgumentsFailed)
+		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 }
 
@@ -50,7 +42,7 @@ func (c *snapshotCommand) doListCameras(ctx context.Context) (bool, []*communica
 	list, err := c.f.NewCctv().GetCameras(ctx, &emptypb.Empty{}, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		c.l.Logf(logger.ErrorLevel, "Get cameras failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 
 	for _, cam := range list.Cameras {
@@ -63,13 +55,13 @@ func (c *snapshotCommand) doListCameras(ctx context.Context) (bool, []*communica
 func (c *snapshotCommand) doSnapshot(ctx context.Context, cameraName string) (bool, []*communication.BotMessage) {
 	id, ok := c.mapNameToId[cameraName]
 	if !ok {
-		return true, replyText("Камера с таким именем не найдена")
+		return true, command.ReplyText("Камера с таким именем не найдена")
 	}
 
 	resp, err := c.f.NewCctv().GetSnapshot(ctx, &rms_cctv.GetSnapshotRequest{CameraId: id}, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		c.l.Logf(logger.ErrorLevel, "Get snapshot failed: %s", err)
-		return true, replyText(command.SomethingWentWrong)
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 	return true, []*communication.BotMessage{formatSnapshot(cameraName, resp.Snapshot)}
 }

@@ -13,7 +13,7 @@ const LongRequestTimeout = 1 * time.Minute
 // Command represents chat bot command
 type Command interface {
 	// Do executes the command and returns done state and messages to response
-	Do(ctx context.Context, arguments Arguments) (done bool, messages []*communication.BotMessage)
+	Do(ctx context.Context, arguments Arguments, attachment *communication.Attachment) (done bool, messages []*communication.BotMessage)
 }
 
 // IsCommand checks the text can be interpreted as command
