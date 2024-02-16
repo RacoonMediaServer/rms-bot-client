@@ -35,6 +35,10 @@ func (s *libraryCommand) Do(ctx context.Context, arguments command.Arguments, at
 			Title:   "Сериалы",
 			Command: "Сериалы",
 		})
+		msg.Buttons = append(msg.Buttons, &communication.Button{
+			Title:   "Ролики",
+			Command: "Ролики",
+		})
 		return false, []*communication.BotMessage{&msg}
 	}
 
@@ -44,6 +48,8 @@ func (s *libraryCommand) Do(ctx context.Context, arguments command.Arguments, at
 		movieType = rms_library.MovieType_Film
 	case "Сериалы":
 		movieType = rms_library.MovieType_TvSeries
+	case "Ролики":
+		movieType = rms_library.MovieType_Clip
 	default:
 		return false, command.ReplyText("Неверная категория")
 	}
