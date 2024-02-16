@@ -33,7 +33,10 @@ func (t *torrentFileHandler) Do(ctx context.Context, args command.Arguments, att
 	case tfhStateInit:
 		t.content = attachment.Content
 		t.state = tfhStateSelectTitle
-		return false, command.ReplyText("Введите название фильма/сериала")
+		if len(args) == 0 {
+			return false, command.ReplyText("Введите название фильма/сериала")
+		}
+		fallthrough
 
 	case tfhStateSelectTitle:
 		if len(args) == 0 {
