@@ -64,6 +64,7 @@ func (s *searchCommand) formatMovieMessage(mov *rms_library.FoundMovie) *communi
 	m.Buttons = append(m.Buttons, &communication.Button{Title: "Скачать", Command: "/download auto " + mov.Id})
 	m.Buttons = append(m.Buttons, &communication.Button{Title: "Скачать быстрее", Command: "/download faster " + mov.Id})
 	m.Buttons = append(m.Buttons, &communication.Button{Title: "Выбрать раздачу", Command: "/download select " + mov.Id})
+	m.Buttons = append(m.Buttons, &communication.Button{Title: "Торрент-файл", Command: "/download file " + mov.Id})
 
 	m.KeyboardStyle = communication.KeyboardStyle_Message
 
