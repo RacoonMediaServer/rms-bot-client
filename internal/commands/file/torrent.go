@@ -45,7 +45,7 @@ func (t *torrentFileHandler) Do(ctx context.Context, args command.Arguments, att
 			Id: "internal:" + uuid.NewString(),
 			Info: &rms_library.MovieInfo{
 				Title: args.String(),
-				Type:  rms_library.MovieType_Film,
+				Type:  rms_library.MovieType_Clip,
 			},
 			TorrentFile: t.content,
 		}
