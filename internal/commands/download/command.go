@@ -87,7 +87,7 @@ func (d *downloadCommand) doInitial(ctx context.Context, arguments command.Argum
 	mov := result.Result
 	d.mov = result.Result
 
-	if mov.Info.Type != rms_library.MovieType_TvSeries || mov.Info.Seasons == nil {
+	if mov.Info.Type != rms_library.MovieType_TvSeries || mov.Info.Seasons == nil || arguments[0] == "file" {
 		return d.download(ctx, arguments[1:], attachment)
 	}
 
