@@ -24,7 +24,7 @@ func formatCameraList(cameras []*rms_cctv.Camera) *communication.BotMessage {
 
 func formatSnapshot(cameraName string, snapshot []byte) *communication.BotMessage {
 	msg := communication.BotMessage{}
-	msg.Text = fmt.Sprintf("Снепшот с камеры '%s' (%s)", cameraName, time.Now().Format(time.RFC1123))
+	msg.Text = fmt.Sprintf("Изображение с камеры '%s' (%s)", cameraName, time.Now().Format(time.RFC1123))
 	msg.Attachment = &communication.Attachment{
 		Type:     communication.Attachment_Photo,
 		MimeType: "image/jpeg",
