@@ -3,6 +3,7 @@ package notes
 import (
 	"context"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
+	"github.com/RacoonMediaServer/rms-bot-client/internal/middleware"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_notes "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-notes"
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
@@ -79,8 +80,10 @@ func (n *notesCommand) stateWaitText(ctx context.Context, arguments command.Argu
 }
 
 func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
-	return &notesCommand{
+	nc := &notesCommand{
 		f: f,
 		l: l.Fields(map[string]interface{}{"command": "notes"}),
 	}
+
+	return middleware.NewNotesAuthCommand(f, l, nc)
 }

@@ -20,13 +20,14 @@ type execution struct {
 
 const maxArgs = 10
 
-func newExecution(cmd command.Command, fn sendFunc) *execution {
+func newExecution(cmd command.Command, fn sendFunc, user int32) *execution {
 	e := &execution{
 		cmd:  cmd,
 		args: make(chan *execArgs, maxArgs),
 		fn:   fn,
 	}
-	e.ctx, e.cancel = context.WithCancel(context.TODO())
+	ctx := context.WithValue(context.TODO(), "user", user)
+	e.ctx, e.cancel = context.WithCancel(ctx)
 
 	go e.execute()
 	return e

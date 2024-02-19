@@ -3,6 +3,7 @@ package tasks
 import (
 	"context"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
+	"github.com/RacoonMediaServer/rms-bot-client/internal/middleware"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_notes "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-notes"
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
@@ -143,8 +144,10 @@ func (n *tasksCommand) stateWaitSnoozeDate(ctx context.Context, arguments comman
 }
 
 func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
-	return &tasksCommand{
+	tc := &tasksCommand{
 		f: f,
 		l: l.Fields(map[string]interface{}{"command": "tasks"}),
 	}
+
+	return middleware.NewNotesAuthCommand(f, l, tc)
 }

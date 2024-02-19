@@ -48,7 +48,7 @@ func (c *chat) processMessage(msg *communication.UserMessage) {
 			c.replyText("Неизвестная команда, всегда можно набрать /help...")
 			return
 		}
-		c.e = newExecution(cmd, c.send)
+		c.e = newExecution(cmd, c.send, msg.User)
 
 	} else {
 		if c.e == nil || c.e.isDone() {
@@ -60,7 +60,7 @@ func (c *chat) processMessage(msg *communication.UserMessage) {
 					c.replyText(command.SomethingWentWrong)
 					return
 				}
-				c.e = newExecution(cmd, c.send)
+				c.e = newExecution(cmd, c.send, msg.User)
 			} else {
 				c.replyText("Необходимо указать команду. Например: /help")
 				return
