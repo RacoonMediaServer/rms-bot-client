@@ -87,7 +87,7 @@ func (n *tasksCommand) handleDoneCommand(ctx context.Context, arguments command.
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 
-	req := rms_notes.DoneTaskRequest{Id: arguments[1]}
+	req := rms_notes.DoneTaskRequest{Id: arguments[1], User: command.GetUserId(ctx)}
 	_, err := n.f.NewNotes().DoneTask(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		n.l.Logf(logger.ErrorLevel, "Done task failed: %s", err)
@@ -110,7 +110,7 @@ func (n *tasksCommand) stateWaitTaskDate(ctx context.Context, arguments command.
 		return false, command.ReplyText("Не удалось распарсить дату")
 	}
 
-	req := rms_notes.AddTaskRequest{Text: n.title}
+	req := rms_notes.AddTaskRequest{Text: n.title, User: command.GetUserId(ctx)}
 	if date != nil {
 		dateString := date.Format(obsidianDateFormat)
 		req.DueDate = &dateString
@@ -132,7 +132,7 @@ func (n *tasksCommand) stateWaitSnoozeDate(ctx context.Context, arguments comman
 	}
 	dateString := date.Format(obsidianDateFormat)
 
-	req := rms_notes.SnoozeTaskRequest{Id: n.id, DueDate: &dateString}
+	req := rms_notes.SnoozeTaskRequest{Id: n.id, DueDate: &dateString, User: command.GetUserId(ctx)}
 
 	_, err = n.f.NewNotes().SnoozeTask(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {

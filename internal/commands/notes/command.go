@@ -70,6 +70,7 @@ func (n *notesCommand) stateWaitText(ctx context.Context, arguments command.Argu
 	req := rms_notes.AddNoteRequest{
 		Title: n.title,
 		Text:  arguments.String(),
+		User:  command.GetUserId(ctx),
 	}
 	_, err := n.f.NewNotes().AddNote(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
