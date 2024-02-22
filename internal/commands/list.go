@@ -3,6 +3,7 @@ package commands
 import (
 	"errors"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
+	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/archive"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/download"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/downloads"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/file"
@@ -36,6 +37,7 @@ func init() {
 	commandMap[unlink.Command.ID] = unlink.Command
 	commandMap[snapshot.Command.ID] = snapshot.Command
 	commandMap[file.Command.ID] = file.Command
+	commandMap[archive.Command.ID] = archive.Command
 }
 
 func NewCommand(commandID string, f servicemgr.ServiceFactory, l logger.Logger) (command.Command, error) {
