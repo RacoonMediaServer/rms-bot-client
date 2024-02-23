@@ -7,10 +7,6 @@ import (
 	"go-micro.dev/v4/logger"
 )
 
-import (
-	"context"
-)
-
 var Command command.Type = command.Type{
 	ID:       "file",
 	Title:    "Загрузить",
@@ -22,20 +18,20 @@ var Command command.Type = command.Type{
 type fileCommand struct {
 	f servicemgr.ServiceFactory
 	l logger.Logger
-	h fileHandler
+	h command.Command
 }
 
-func (c *fileCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
+func (c *fileCommand) Do(ctx command.Context) (bool, []*communication.BotMessage) {
 	if c.h == nil {
-		if attachment == nil {
+		if ctx.Attachment == nil {
 			return true, command.ReplyText(command.SomethingWentWrong)
 		}
-		c.h = newFileHandler(c.f, c.l, attachment.MimeType)
+		c.h = newFileHandler(c.f, c.l, ctx.Attachment.MimeType)
 		if c.h == nil {
 			return true, command.ReplyText("Формат файла не поддерживается")
 		}
 	}
-	return c.h.Do(ctx, arguments, attachment)
+	return c.h.Do(ctx)
 }
 
 func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {

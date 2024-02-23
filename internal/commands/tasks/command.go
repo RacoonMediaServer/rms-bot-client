@@ -1,7 +1,6 @@
 package tasks
 
 import (
-	"context"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/middleware"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
@@ -39,55 +38,55 @@ type tasksCommand struct {
 	date  time.Time
 }
 
-func (n *tasksCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
+func (n *tasksCommand) Do(ctx command.Context) (bool, []*communication.BotMessage) {
 	switch n.state {
 	case stateInitial:
-		return n.stateInitial(ctx, arguments)
+		return n.stateInitial(ctx)
 	case stateWaitTaskText:
-		return n.stateWaitTaskText(ctx, arguments)
+		return n.stateWaitTaskText(ctx)
 	case stateWaitTaskDate:
-		return n.stateWaitTaskDate(ctx, arguments)
+		return n.stateWaitTaskDate(ctx)
 	case stateWaitSnoozeDate:
-		return n.stateWaitSnoozeDate(ctx, arguments)
+		return n.stateWaitSnoozeDate(ctx)
 
 	}
 
 	return true, command.ReplyText(command.SomethingWentWrong)
 }
 
-func (n *tasksCommand) stateInitial(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
-	if len(arguments) == 0 {
+func (n *tasksCommand) stateInitial(ctx command.Context) (bool, []*communication.BotMessage) {
+	if len(ctx.Arguments) == 0 {
 		n.state = stateWaitTaskText
 		return false, command.ReplyText("Введите описание задачи")
 	}
 
-	switch arguments[0] {
+	switch ctx.Arguments[0] {
 	case "snooze":
-		return n.handleSnoozeCommand(ctx, arguments)
+		return n.handleSnoozeCommand(ctx)
 	case "done":
-		return n.handleDoneCommand(ctx, arguments)
+		return n.handleDoneCommand(ctx)
 	}
 
 	return true, command.ReplyText(command.ParseArgumentsFailed)
 }
 
-func (n *tasksCommand) handleSnoozeCommand(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
-	if len(arguments) < 2 {
+func (n *tasksCommand) handleSnoozeCommand(ctx command.Context) (bool, []*communication.BotMessage) {
+	if len(ctx.Arguments) < 2 {
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 
-	n.id = arguments[1]
+	n.id = ctx.Arguments[1]
 	n.state = stateWaitSnoozeDate
 
 	return false, []*communication.BotMessage{pickSnoozeDateMessage}
 }
 
-func (n *tasksCommand) handleDoneCommand(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
-	if len(arguments) < 2 {
+func (n *tasksCommand) handleDoneCommand(ctx command.Context) (bool, []*communication.BotMessage) {
+	if len(ctx.Arguments) < 2 {
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 
-	req := rms_notes.DoneTaskRequest{Id: arguments[1], User: command.GetUserId(ctx)}
+	req := rms_notes.DoneTaskRequest{Id: ctx.Arguments[1], User: ctx.UserID}
 	_, err := n.f.NewNotes().DoneTask(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		n.l.Logf(logger.ErrorLevel, "Done task failed: %s", err)
@@ -97,20 +96,20 @@ func (n *tasksCommand) handleDoneCommand(ctx context.Context, arguments command.
 	return true, command.ReplyText("Задача завершена")
 }
 
-func (n *tasksCommand) stateWaitTaskText(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
-	n.title = arguments.String()
+func (n *tasksCommand) stateWaitTaskText(ctx command.Context) (bool, []*communication.BotMessage) {
+	n.title = ctx.Arguments.String()
 	n.state = stateWaitTaskDate
 
 	return false, []*communication.BotMessage{pickTaskDateMessage}
 }
 
-func (n *tasksCommand) stateWaitTaskDate(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
-	date, err := parseDoneDate(arguments.String())
+func (n *tasksCommand) stateWaitTaskDate(ctx command.Context) (bool, []*communication.BotMessage) {
+	date, err := parseDoneDate(ctx.Arguments.String())
 	if err != nil {
 		return false, command.ReplyText("Не удалось распарсить дату")
 	}
 
-	req := rms_notes.AddTaskRequest{Text: n.title, User: command.GetUserId(ctx)}
+	req := rms_notes.AddTaskRequest{Text: n.title, User: ctx.UserID}
 	if date != nil {
 		dateString := date.Format(obsidianDateFormat)
 		req.DueDate = &dateString
@@ -125,14 +124,14 @@ func (n *tasksCommand) stateWaitTaskDate(ctx context.Context, arguments command.
 	return true, command.ReplyText("Задача добавлена")
 }
 
-func (n *tasksCommand) stateWaitSnoozeDate(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
-	date, err := parseSnoozeDate(arguments.String())
+func (n *tasksCommand) stateWaitSnoozeDate(ctx command.Context) (bool, []*communication.BotMessage) {
+	date, err := parseSnoozeDate(ctx.Arguments.String())
 	if err != nil {
 		return false, command.ReplyText("Не удалось распарсить дату")
 	}
 	dateString := date.Format(obsidianDateFormat)
 
-	req := rms_notes.SnoozeTaskRequest{Id: n.id, DueDate: &dateString, User: command.GetUserId(ctx)}
+	req := rms_notes.SnoozeTaskRequest{Id: n.id, DueDate: &dateString, User: ctx.UserID}
 
 	_, err = n.f.NewNotes().SnoozeTask(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {

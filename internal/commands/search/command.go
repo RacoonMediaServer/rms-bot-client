@@ -1,7 +1,6 @@
 package search
 
 import (
-	"context"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_library "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-library"
@@ -25,12 +24,12 @@ type searchCommand struct {
 	l logger.Logger
 }
 
-func (s *searchCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (done bool, messages []*communication.BotMessage) {
-	if len(arguments) < 1 {
+func (s *searchCommand) Do(ctx command.Context) (done bool, messages []*communication.BotMessage) {
+	if len(ctx.Arguments) < 1 {
 		return false, command.ReplyText("Что ищем?")
 	}
 
-	resp, err := s.f.NewLibrary().SearchMovie(ctx, &rms_library.SearchMovieRequest{Text: arguments.String(), Limit: searchMoviesLimit}, client.WithRequestTimeout(1*time.Minute))
+	resp, err := s.f.NewLibrary().SearchMovie(ctx, &rms_library.SearchMovieRequest{Text: ctx.Arguments.String(), Limit: searchMoviesLimit}, client.WithRequestTimeout(1*time.Minute))
 	if err != nil {
 		s.l.Logf(logger.ErrorLevel, "SearchMovie failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)

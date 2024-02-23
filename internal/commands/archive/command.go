@@ -1,7 +1,6 @@
 package archive
 
 import (
-	"context"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
@@ -16,13 +15,11 @@ var Command command.Type = command.Type{
 	Factory: New,
 }
 
-type doFunc func(ctx context.Context, args command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage)
-
 type archiveCommand struct {
 	f       servicemgr.ServiceFactory
 	l       logger.Logger
 	state   state
-	fn      map[state]doFunc
+	fn      map[state]command.Handler
 	cameras map[string]uint32
 
 	camera uint32
@@ -30,8 +27,8 @@ type archiveCommand struct {
 	dur    uint64
 }
 
-func (c *archiveCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (done bool, messages []*communication.BotMessage) {
-	return c.fn[c.state](ctx, arguments, attachment)
+func (c *archiveCommand) Do(ctx command.Context) (done bool, messages []*communication.BotMessage) {
+	return c.fn[c.state](ctx)
 }
 
 func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
@@ -41,7 +38,7 @@ func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
 		cameras: make(map[string]uint32),
 	}
 
-	c.fn = map[state]doFunc{
+	c.fn = map[state]command.Handler{
 		stateInitial:        c.doInitial,
 		stateChooseCamera:   c.doChooseCamera,
 		stateChooseDay:      c.doChooseDay,

@@ -9,10 +9,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-import (
-	"context"
-)
-
 var Command command.Type = command.Type{
 	ID:      "updates",
 	Title:   "Обновления",
@@ -25,7 +21,7 @@ type updatesCommand struct {
 	l logger.Logger
 }
 
-func (u *updatesCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
+func (u *updatesCommand) Do(ctx command.Context) (bool, []*communication.BotMessage) {
 	resp, err := u.f.NewLibrary().GetTvSeriesUpdates(ctx, &emptypb.Empty{}, client.WithRequestTimeout(command.LongRequestTimeout))
 	if err != nil {
 		u.l.Logf(logger.ErrorLevel, "Get TV-series updates failed: %s", err)

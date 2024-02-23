@@ -1,7 +1,6 @@
 package download
 
 import (
-	"context"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_library "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-library"
@@ -20,7 +19,6 @@ var Command command.Type = command.Type{
 	Factory:  New,
 }
 
-type doFunc func(ctx context.Context, args command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage)
 type state int
 
 const (
@@ -37,8 +35,8 @@ type downloadCommand struct {
 	f        servicemgr.ServiceFactory
 	l        logger.Logger
 	state    state
-	stateMap map[state]doFunc
-	download doFunc
+	stateMap map[state]command.Handler
+	download command.Handler
 	faster   bool
 	id       string
 	season   *uint
@@ -46,15 +44,15 @@ type downloadCommand struct {
 	mov      *rms_library.Movie
 }
 
-func (d *downloadCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (done bool, messages []*communication.BotMessage) {
-	return d.stateMap[d.state](ctx, arguments, attachment)
+func (d *downloadCommand) Do(ctx command.Context) (done bool, messages []*communication.BotMessage) {
+	return d.stateMap[d.state](ctx)
 }
 
-func (d *downloadCommand) doInitial(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
-	if len(arguments) < 2 {
+func (d *downloadCommand) doInitial(ctx command.Context) (bool, []*communication.BotMessage) {
+	if len(ctx.Arguments) < 2 {
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
-	switch arguments[0] {
+	switch ctx.Arguments[0] {
 	case "auto":
 		d.download = d.downloadAuto
 
@@ -72,7 +70,7 @@ func (d *downloadCommand) doInitial(ctx context.Context, arguments command.Argum
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 
-	d.id = arguments[1]
+	d.id = ctx.Arguments[1]
 
 	result, err := d.f.NewLibrary().GetMovie(ctx, &rms_library.GetMovieRequest{ID: d.id})
 	if err != nil {
@@ -87,8 +85,8 @@ func (d *downloadCommand) doInitial(ctx context.Context, arguments command.Argum
 	mov := result.Result
 	d.mov = result.Result
 
-	if mov.Info.Type != rms_library.MovieType_TvSeries || mov.Info.Seasons == nil || arguments[0] == "file" {
-		return d.download(ctx, arguments[1:], attachment)
+	if mov.Info.Type != rms_library.MovieType_TvSeries || mov.Info.Seasons == nil || ctx.Arguments[0] == "file" {
+		return d.download(ctx)
 	}
 
 	d.state = stateChooseSeason
@@ -113,7 +111,7 @@ func (d *downloadCommand) doInitial(ctx context.Context, arguments command.Argum
 	return false, []*communication.BotMessage{&msg}
 }
 
-func (d *downloadCommand) downloadAuto(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
+func (d *downloadCommand) downloadAuto(ctx command.Context) (bool, []*communication.BotMessage) {
 	req := &rms_library.DownloadMovieAutoRequest{
 		Id:     d.id,
 		Faster: d.faster,
@@ -140,7 +138,7 @@ func (d *downloadCommand) downloadAuto(ctx context.Context, arguments command.Ar
 	return true, command.ReplyText("Удалось найти сезоны " + formatSeasons(resp.Seasons) + ". Скачивание началось")
 }
 
-func (d *downloadCommand) downloadSelect(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
+func (d *downloadCommand) downloadSelect(ctx command.Context) (bool, []*communication.BotMessage) {
 	req := rms_library.FindMovieTorrentsRequest{
 		Id:    d.id,
 		Limit: maxTorrents,
@@ -166,33 +164,33 @@ func (d *downloadCommand) downloadSelect(ctx context.Context, arguments command.
 	return false, []*communication.BotMessage{formatTorrents(resp.Results)}
 }
 
-func (d *downloadCommand) downloadFile(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
+func (d *downloadCommand) downloadFile(ctx command.Context) (bool, []*communication.BotMessage) {
 	d.state = stateWaitFile
 	return false, command.ReplyText("Необходимо прислать торрент-файл с содержимым выбранного фильма/сериала")
 }
 
-func (d *downloadCommand) doChooseSeason(ctx context.Context, args command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
-	if len(args) != 1 {
+func (d *downloadCommand) doChooseSeason(ctx command.Context) (bool, []*communication.BotMessage) {
+	if len(ctx.Arguments) != 1 {
 		return false, command.ReplyText("Необходимо выбрать сезон")
 	}
-	if args[0] == "Все" {
-		return d.download(ctx, args, attachment)
+	if ctx.Arguments[0] == "Все" {
+		return d.download(ctx)
 	}
-	season, err := strconv.ParseUint(args[0], 10, 8)
+	season, err := strconv.ParseUint(ctx.Arguments[0], 10, 8)
 	if err != nil {
 		return false, command.ReplyText("Неверно указан номер сезона")
 	}
 	s := uint(season)
 	d.season = &s
 
-	return d.download(ctx, args, attachment)
+	return d.download(ctx)
 }
 
-func (d *downloadCommand) doChooseTorrent(ctx context.Context, args command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
-	if len(args) != 1 {
+func (d *downloadCommand) doChooseTorrent(ctx command.Context) (bool, []*communication.BotMessage) {
+	if len(ctx.Arguments) != 1 {
 		return false, command.ReplyText("Необходимо выбрать раздачу")
 	}
-	no, err := strconv.ParseInt(args[0], 10, 8)
+	no, err := strconv.ParseInt(ctx.Arguments[0], 10, 8)
 	if err != nil || no <= 0 || no > int64(len(d.torrents)) {
 		return false, command.ReplyText("Неверно указан номер раздачи")
 	}
@@ -208,18 +206,18 @@ func (d *downloadCommand) doChooseTorrent(ctx context.Context, args command.Argu
 	return true, command.ReplyText("Скачивание началось")
 }
 
-func (d *downloadCommand) doWaitFile(ctx context.Context, args command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
-	if attachment == nil {
+func (d *downloadCommand) doWaitFile(ctx command.Context) (bool, []*communication.BotMessage) {
+	if ctx.Attachment == nil {
 		return false, command.ReplyText("Необходимо прислать торрент-файл")
 	}
-	if attachment.MimeType != "application/x-bittorrent" {
+	if ctx.Attachment.MimeType != "application/x-bittorrent" {
 		return false, command.ReplyText("Неверный формат файла")
 	}
 
 	req := rms_library.UploadMovieRequest{
 		Id:          d.mov.Id,
 		Info:        d.mov.Info,
-		TorrentFile: attachment.Content,
+		TorrentFile: ctx.Attachment.Content,
 	}
 	_, err := d.f.NewLibrary().UploadMovie(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
@@ -236,7 +234,7 @@ func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
 		l: l.Fields(map[string]interface{}{"command": "download"}),
 	}
 
-	d.stateMap = map[state]doFunc{
+	d.stateMap = map[state]command.Handler{
 		stateInitial:       d.doInitial,
 		stateChooseSeason:  d.doChooseSeason,
 		stateChooseTorrent: d.doChooseTorrent,

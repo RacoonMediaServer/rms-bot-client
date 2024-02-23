@@ -1,7 +1,6 @@
 package notes
 
 import (
-	"context"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/middleware"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
@@ -36,41 +35,41 @@ type notesCommand struct {
 	state state
 }
 
-func (n *notesCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
+func (n *notesCommand) Do(ctx command.Context) (bool, []*communication.BotMessage) {
 	switch n.state {
 	case stateInitial:
-		return n.stateInitial(ctx, arguments)
+		return n.stateInitial(ctx)
 	case stateWaitTitle:
-		return n.stateWaitTitle(ctx, arguments)
+		return n.stateWaitTitle(ctx)
 	case stateWaitText:
-		return n.stateWaitText(ctx, arguments)
+		return n.stateWaitText(ctx)
 	}
 
 	return true, command.ReplyText(command.SomethingWentWrong)
 }
 
-func (n *notesCommand) stateInitial(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
-	if len(arguments) == 0 {
+func (n *notesCommand) stateInitial(ctx command.Context) (bool, []*communication.BotMessage) {
+	if len(ctx.Arguments) == 0 {
 		n.state = stateWaitTitle
 		return false, command.ReplyText("Введите заголовок заметки")
 	}
 
-	n.title = arguments.String()
+	n.title = ctx.Arguments.String()
 	n.state = stateWaitText
 	return false, command.ReplyText("Введите текст заметки")
 }
 
-func (n *notesCommand) stateWaitTitle(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
-	n.title = arguments.String()
+func (n *notesCommand) stateWaitTitle(ctx command.Context) (bool, []*communication.BotMessage) {
+	n.title = ctx.Arguments.String()
 	n.state = stateWaitText
 	return false, command.ReplyText("Введите текст заметки")
 }
 
-func (n *notesCommand) stateWaitText(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
+func (n *notesCommand) stateWaitText(ctx command.Context) (bool, []*communication.BotMessage) {
 	req := rms_notes.AddNoteRequest{
 		Title: n.title,
-		Text:  arguments.String(),
-		User:  command.GetUserId(ctx),
+		Text:  ctx.Arguments.String(),
+		User:  ctx.UserID,
 	}
 	_, err := n.f.NewNotes().AddNote(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {

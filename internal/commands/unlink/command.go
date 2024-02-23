@@ -1,7 +1,6 @@
 package unlink
 
 import (
-	"context"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
@@ -20,7 +19,7 @@ type unlinkCommand struct {
 	l logger.Logger
 }
 
-func (u *unlinkCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
+func (u *unlinkCommand) Do(ctx command.Context) (bool, []*communication.BotMessage) {
 	messages := []*communication.BotMessage{
 		{
 			Text: "Управление отключено",

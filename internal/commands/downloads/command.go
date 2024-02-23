@@ -8,10 +8,6 @@ import (
 	"go-micro.dev/v4/logger"
 )
 
-import (
-	"context"
-)
-
 var Command command.Type = command.Type{
 	ID:      "downloads",
 	Title:   "Загрузки",
@@ -24,22 +20,24 @@ type downloadsCommand struct {
 	l logger.Logger
 }
 
-func (d *downloadsCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
-	if len(arguments) == 0 {
-		return d.doList(ctx, arguments)
+func (d *downloadsCommand) Do(ctx command.Context) (bool, []*communication.BotMessage) {
+	if len(ctx.Arguments) == 0 {
+		return d.doList(ctx)
 	}
 
-	switch arguments[0] {
+	arg := ctx.Arguments[0]
+	ctx.Arguments = ctx.Arguments[1:]
+	switch arg {
 	case "remove":
-		return d.doRemove(ctx, arguments[1:])
+		return d.doRemove(ctx)
 	case "up":
-		return d.doUp(ctx, arguments[1:])
+		return d.doUp(ctx)
 	}
 
 	return true, command.ReplyText(command.ParseArgumentsFailed)
 }
 
-func (d *downloadsCommand) doList(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
+func (d *downloadsCommand) doList(ctx command.Context) (bool, []*communication.BotMessage) {
 	resp, err := d.f.NewTorrent().GetTorrents(ctx, &rms_torrent.GetTorrentsRequest{IncludeDoneTorrents: false})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Get torrents failed: %s", err)
@@ -55,12 +53,12 @@ func (d *downloadsCommand) doList(ctx context.Context, arguments command.Argumen
 	return true, messages
 }
 
-func (d *downloadsCommand) doRemove(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
-	if len(arguments) != 1 {
+func (d *downloadsCommand) doRemove(ctx command.Context) (bool, []*communication.BotMessage) {
+	if len(ctx.Arguments) != 1 {
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 
-	_, err := d.f.NewTorrent().RemoveTorrent(ctx, &rms_torrent.RemoveTorrentRequest{Id: arguments[0]})
+	_, err := d.f.NewTorrent().RemoveTorrent(ctx, &rms_torrent.RemoveTorrentRequest{Id: ctx.Arguments[0]})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Remove torrent failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
@@ -68,12 +66,12 @@ func (d *downloadsCommand) doRemove(ctx context.Context, arguments command.Argum
 	return true, command.ReplyText(command.Removed)
 }
 
-func (d *downloadsCommand) doUp(ctx context.Context, arguments command.Arguments) (bool, []*communication.BotMessage) {
-	if len(arguments) != 1 {
+func (d *downloadsCommand) doUp(ctx command.Context) (bool, []*communication.BotMessage) {
+	if len(ctx.Arguments) != 1 {
 		return true, command.ReplyText("Не удалось распознать параметры команды")
 	}
 
-	_, err := d.f.NewTorrent().UpPriority(ctx, &rms_torrent.UpPriorityRequest{Id: arguments[0]})
+	_, err := d.f.NewTorrent().UpPriority(ctx, &rms_torrent.UpPriorityRequest{Id: ctx.Arguments[0]})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Up torrent failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)

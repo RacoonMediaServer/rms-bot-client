@@ -1,7 +1,6 @@
 package command
 
 import (
-	"context"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	"strings"
 	"time"
@@ -13,8 +12,10 @@ const LongRequestTimeout = 1 * time.Minute
 // Command represents chat bot command
 type Command interface {
 	// Do executes the command and returns done state and messages to response
-	Do(ctx context.Context, arguments Arguments, attachment *communication.Attachment) (done bool, messages []*communication.BotMessage)
+	Do(ctx Context) (done bool, messages []*communication.BotMessage)
 }
+
+type Handler func(ctx Context) (bool, []*communication.BotMessage)
 
 // IsCommand checks the text can be interpreted as command
 func IsCommand(text string) bool {

@@ -1,7 +1,6 @@
 package library
 
 import (
-	"context"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_library "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-library"
@@ -23,8 +22,8 @@ type libraryCommand struct {
 	l logger.Logger
 }
 
-func (s *libraryCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
-	if len(arguments) == 0 {
+func (s *libraryCommand) Do(ctx command.Context) (bool, []*communication.BotMessage) {
+	if len(ctx.Arguments) == 0 {
 		msg := communication.BotMessage{Text: "Что ищем?"}
 		msg.KeyboardStyle = communication.KeyboardStyle_Chat
 		msg.Buttons = append(msg.Buttons, &communication.Button{
@@ -43,7 +42,7 @@ func (s *libraryCommand) Do(ctx context.Context, arguments command.Arguments, at
 	}
 
 	var movieType rms_library.MovieType
-	switch arguments[0] {
+	switch ctx.Arguments[0] {
 	case "Фильмы":
 		movieType = rms_library.MovieType_Film
 	case "Сериалы":

@@ -16,6 +16,7 @@ type execution struct {
 	cancel context.CancelFunc
 	args   chan *execArgs
 	fn     sendFunc
+	user   int32
 }
 
 const maxArgs = 10
@@ -25,9 +26,9 @@ func newExecution(cmd command.Command, fn sendFunc, user int32) *execution {
 		cmd:  cmd,
 		args: make(chan *execArgs, maxArgs),
 		fn:   fn,
+		user: user,
 	}
-	ctx := context.WithValue(context.TODO(), "user", user)
-	e.ctx, e.cancel = context.WithCancel(ctx)
+	e.ctx, e.cancel = context.WithCancel(context.TODO())
 
 	go e.execute()
 	return e
@@ -53,7 +54,13 @@ func (e *execution) execute() {
 	for {
 		select {
 		case args := <-e.args:
-			done, replies := e.cmd.Do(e.ctx, args.args, args.attachment)
+			ctx := command.Context{
+				Ctx:        e.ctx,
+				Arguments:  args.args,
+				Attachment: args.attachment,
+				UserID:     e.user,
+			}
+			done, replies := e.cmd.Do(ctx)
 			for _, m := range replies {
 				e.fn(m)
 			}

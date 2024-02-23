@@ -18,7 +18,7 @@ func (c *archiveCommand) start(ctx context.Context) error {
 	}
 
 	// 2. Create transcoder job
-	job, err := c.createJob(ctx, replyUri)
+	_, err = c.createJob(ctx, replyUri)
 	if err != nil {
 		return fmt.Errorf("create transcoding job failed: %s", err)
 	}

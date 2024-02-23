@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
@@ -20,7 +19,7 @@ var helpCommandType = command.Type{
 type helpCommand struct {
 }
 
-func (h helpCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (done bool, messages []*communication.BotMessage) {
+func (h helpCommand) Do(ctx command.Context) (done bool, messages []*communication.BotMessage) {
 	titles := make([]string, 0, len(commandMap))
 	for k, _ := range commandMap {
 		titles = append(titles, k)

@@ -1,7 +1,6 @@
 package file
 
 import (
-	"context"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_library "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-library"
@@ -28,18 +27,18 @@ type torrentFileHandler struct {
 	content []byte
 }
 
-func (t *torrentFileHandler) Do(ctx context.Context, args command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
+func (t *torrentFileHandler) Do(ctx command.Context) (bool, []*communication.BotMessage) {
 	switch t.state {
 	case tfhStateInit:
-		t.content = attachment.Content
+		t.content = ctx.Attachment.Content
 		t.state = tfhStateSelectTitle
-		if len(args) == 0 {
+		if len(ctx.Arguments) == 0 {
 			return false, command.ReplyText("Введите название фильма/сериала")
 		}
 		fallthrough
 
 	case tfhStateSelectTitle:
-		if len(args) == 0 {
+		if len(ctx.Arguments) == 0 {
 			return false, command.ReplyText("Название не должно быть пустым")
 		}
 
@@ -47,7 +46,7 @@ func (t *torrentFileHandler) Do(ctx context.Context, args command.Arguments, att
 		req := rms_library.UploadMovieRequest{
 			Id: "internal:" + uuid.NewString(),
 			Info: &rms_library.MovieInfo{
-				Title: args.String(),
+				Title: ctx.Arguments.String(),
 				Type:  rms_library.MovieType_Clip,
 			},
 			TorrentFile: t.content,

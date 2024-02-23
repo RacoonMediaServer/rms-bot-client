@@ -8,10 +8,6 @@ import (
 	"go-micro.dev/v4/logger"
 )
 
-import (
-	"context"
-)
-
 var Command command.Type = command.Type{
 	ID:       "remove",
 	Title:    "Удалить",
@@ -25,12 +21,12 @@ type removeCommand struct {
 	l logger.Logger
 }
 
-func (r *removeCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
-	if len(arguments) != 1 {
+func (r *removeCommand) Do(ctx command.Context) (bool, []*communication.BotMessage) {
+	if len(ctx.Arguments) != 1 {
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 
-	if _, err := r.f.NewLibrary().DeleteMovie(ctx, &rms_library.DeleteMovieRequest{ID: arguments[0]}); err != nil {
+	if _, err := r.f.NewLibrary().DeleteMovie(ctx, &rms_library.DeleteMovieRequest{ID: ctx.Arguments[0]}); err != nil {
 		r.l.Logf(logger.ErrorLevel, "Remove movie failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
 	}

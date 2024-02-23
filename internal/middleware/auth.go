@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_notes "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-notes"
@@ -17,9 +16,8 @@ type authMiddleware struct {
 	cmd   command.Command
 	state authState
 
-	args   command.Arguments
-	attach *communication.Attachment
-	req    *rms_notes.UserLoginRequest
+	savedCtx command.Context
+	req      *rms_notes.UserLoginRequest
 }
 
 type authState int
@@ -42,46 +40,39 @@ func NewNotesAuthCommand(f servicemgr.ServiceFactory, l logger.Logger, cmd comma
 	}
 }
 
-func (a *authMiddleware) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
+func (a *authMiddleware) Do(ctx command.Context) (bool, []*communication.BotMessage) {
 	switch a.state {
 	case authStateInitial:
-		return a.stateInitial(ctx, arguments, attachment)
+		return a.stateInitial(ctx)
 	case authStateWaitEndpoint:
-		return a.stateWaitEndpoint(ctx, arguments, attachment)
+		return a.stateWaitEndpoint(ctx)
 	case authStateWaitLogin:
-		return a.stateWaitLogin(ctx, arguments, attachment)
+		return a.stateWaitLogin(ctx)
 	case authStateWaitPassword:
-		return a.stateWaitPassword(ctx, arguments, attachment)
+		return a.stateWaitPassword(ctx)
 	case authStatePassThrough:
-		return a.cmd.Do(ctx, arguments, attachment)
+		return a.cmd.Do(ctx)
 	}
 
 	return true, command.ReplyText(command.SomethingWentWrong)
 }
 
-func (a *authMiddleware) stateInitial(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
-	user, ok := ctx.Value("user").(int32)
-	if !ok {
-		a.l.Log(logger.ErrorLevel, "Cannot extract user field")
-		return true, command.ReplyText(command.SomethingWentWrong)
-	}
-
+func (a *authMiddleware) stateInitial(ctx command.Context) (bool, []*communication.BotMessage) {
 	cli := a.f.NewNotes()
-	resp, err := cli.IsUserLogged(ctx, &rms_notes.IsUserLoggedRequest{User: user}, client.WithRequestTimeout(notesReqTimeout))
+	resp, err := cli.IsUserLogged(ctx, &rms_notes.IsUserLoggedRequest{User: ctx.UserID}, client.WithRequestTimeout(notesReqTimeout))
 	if err != nil {
 		a.l.Logf(logger.ErrorLevel, "Cannot access to notes: %s", err)
 		return true, command.ReplyText("Сервис заметок недоступен")
 	}
 	if resp.Result {
 		a.state = authStatePassThrough
-		return a.cmd.Do(ctx, arguments, attachment)
+		return a.cmd.Do(ctx)
 	}
 
 	a.l.Logf(logger.WarnLevel, "User is not logged, login...")
 
-	a.req = &rms_notes.UserLoginRequest{User: user}
-	a.args = arguments
-	a.attach = attachment
+	a.req = &rms_notes.UserLoginRequest{User: ctx.UserID}
+	a.savedCtx = ctx
 
 	msg := communication.BotMessage{}
 	msg.Text = "Для доступа к заметкам необходимо указать данные учетной записи Nextcloud. Введите путь до сервера, например http://nc.rms.local/remote.php/dav"
@@ -93,8 +84,8 @@ func (a *authMiddleware) stateInitial(ctx context.Context, arguments command.Arg
 	return false, []*communication.BotMessage{&msg}
 }
 
-func (a *authMiddleware) stateWaitEndpoint(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
-	endpoint := arguments.String()
+func (a *authMiddleware) stateWaitEndpoint(ctx command.Context) (bool, []*communication.BotMessage) {
+	endpoint := ctx.Arguments.String()
 	if endpoint == "auto" {
 		endpoint = "http://nc.rms.local/remote.php/dav"
 	}
@@ -105,15 +96,15 @@ func (a *authMiddleware) stateWaitEndpoint(ctx context.Context, arguments comman
 	return false, command.ReplyText("Введите имя пользователя")
 }
 
-func (a *authMiddleware) stateWaitLogin(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
-	a.req.Login = arguments.String()
+func (a *authMiddleware) stateWaitLogin(ctx command.Context) (bool, []*communication.BotMessage) {
+	a.req.Login = ctx.Arguments.String()
 	a.state = authStateWaitPassword
 
 	return false, command.ReplyText("Введите пароль")
 }
 
-func (a *authMiddleware) stateWaitPassword(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (bool, []*communication.BotMessage) {
-	a.req.Password = arguments.String()
+func (a *authMiddleware) stateWaitPassword(ctx command.Context) (bool, []*communication.BotMessage) {
+	a.req.Password = ctx.Arguments.String()
 
 	cli := a.f.NewNotes()
 	resp, err := cli.UserLogin(ctx, a.req, client.WithRequestTimeout(notesReqTimeout))
@@ -130,7 +121,7 @@ func (a *authMiddleware) stateWaitPassword(ctx context.Context, arguments comman
 	case rms_notes.UserLoginResponse_OK:
 		a.state = authStatePassThrough
 		reply := command.ReplyText("Сервис заметок подключен")
-		result, items := a.cmd.Do(ctx, a.args, a.attach)
+		result, items := a.cmd.Do(a.savedCtx)
 		reply = append(reply, items...)
 		return result, reply
 	}

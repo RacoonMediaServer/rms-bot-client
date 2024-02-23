@@ -27,12 +27,12 @@ type snapshotCommand struct {
 	mapNameToId map[string]uint32
 }
 
-func (c *snapshotCommand) Do(ctx context.Context, arguments command.Arguments, attachment *communication.Attachment) (done bool, messages []*communication.BotMessage) {
-	switch len(arguments) {
+func (c *snapshotCommand) Do(ctx command.Context) (done bool, messages []*communication.BotMessage) {
+	switch len(ctx.Arguments) {
 	case 0:
 		return c.doListCameras(ctx)
 	case 1:
-		return c.doSnapshot(ctx, arguments[0])
+		return c.doSnapshot(ctx, ctx.Arguments[0])
 	default:
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
