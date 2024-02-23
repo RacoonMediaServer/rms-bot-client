@@ -24,17 +24,18 @@ const requestTimeout = 30 * time.Second
 
 func (c *archiveCommand) doInitial(ctx command.Context) (bool, []*communication.BotMessage) {
 	c.state = stateChooseCamera
+
+	list, err := c.interlayer.Services.NewCctv().GetCameras(ctx.Ctx, &emptypb.Empty{}, client.WithRequestTimeout(requestTimeout))
+	if err != nil {
+		c.l.Logf(logger.ErrorLevel, "Get cameras failed: %s", err)
+		return true, command.ReplyText(command.SomethingWentWrong)
+	}
+
+	for _, cam := range list.Cameras {
+		c.cameras[cam.Name] = cam.Id
+	}
+
 	if len(ctx.Arguments) == 0 {
-		list, err := c.f.NewCctv().GetCameras(ctx.Ctx, &emptypb.Empty{}, client.WithRequestTimeout(requestTimeout))
-		if err != nil {
-			c.l.Logf(logger.ErrorLevel, "Get cameras failed: %s", err)
-			return true, command.ReplyText(command.SomethingWentWrong)
-		}
-
-		for _, cam := range list.Cameras {
-			c.cameras[cam.Name] = cam.Id
-		}
-
 		return false, []*communication.BotMessage{formatCameraList(list.Cameras)}
 	}
 
@@ -51,6 +52,7 @@ func (c *archiveCommand) doChooseCamera(ctx command.Context) (bool, []*communica
 	if !ok {
 		return false, command.ReplyText("Неверно указана камера")
 	}
+	c.ui.Camera = ctx.Arguments[0]
 
 	ctx.Arguments = ctx.Arguments[1:]
 	c.state = stateChooseDay
@@ -92,6 +94,7 @@ func (c *archiveCommand) doChooseTime(ctx command.Context) (bool, []*communicati
 	}
 
 	c.ts.Add(t)
+	c.ui.Time = c.ts.Local().Format(time.RFC3339)
 	ctx.Arguments = ctx.Arguments[1:]
 	c.state = stateChooseDuration
 
@@ -112,6 +115,7 @@ func (c *archiveCommand) doChooseDuration(ctx command.Context) (bool, []*communi
 	}
 
 	c.dur = dur
+	c.ui.Duration = uint(dur)
 	if err = c.start(ctx.Ctx); err != nil {
 		c.l.Logf(logger.ErrorLevel, "Start archive download failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)

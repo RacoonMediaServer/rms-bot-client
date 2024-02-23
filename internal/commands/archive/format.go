@@ -1,9 +1,27 @@
 package archive
 
 import (
+	"bytes"
+	"embed"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_cctv "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-cctv"
+	"text/template"
 )
+
+//go:embed templates
+var templates embed.FS
+
+var plainTextTemplates *template.Template
+
+func init() {
+	plainTextTemplates = template.Must(template.ParseFS(templates, "templates/*.tmpl"))
+}
+
+type uiVideoMessage struct {
+	Camera   string
+	Time     string
+	Duration uint
+}
 
 func formatCameraList(cameras []*rms_cctv.Camera) *communication.BotMessage {
 	msg := communication.BotMessage{}
@@ -75,5 +93,20 @@ func formatDurationRequest() *communication.BotMessage {
 		},
 	}
 
+	return &msg
+}
+
+func formatVideoMessage(uiContext uiVideoMessage, content []byte) *communication.BotMessage {
+	msg := communication.BotMessage{}
+	msg.Attachment = &communication.Attachment{
+		Type:     communication.Attachment_Video,
+		MimeType: "video/mp4",
+		Content:  content,
+	}
+
+	var buf bytes.Buffer
+	_ = plainTextTemplates.ExecuteTemplate(&buf, "videomessage", &uiContext)
+
+	msg.Text = buf.String()
 	return &msg
 }

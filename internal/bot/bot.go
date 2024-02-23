@@ -38,6 +38,7 @@ func New(server Server, interlayer command.Interlayer) *Bot {
 		chats:      map[int32]*chat{},
 		code:       make(chan string),
 	}
+	bot.interlayer.Messenger = bot
 	bot.ctx, bot.cancel = context.WithCancel(context.Background())
 	bot.wg.Add(1)
 	go func() {

@@ -12,8 +12,9 @@ type Remote struct {
 
 // Configuration represents entire service configuration
 type Configuration struct {
-	Device string
-	Remote Remote
+	Device           string
+	Remote           Remote
+	ContentDirectory string `json:"content-directory"`
 }
 
 var config Configuration
