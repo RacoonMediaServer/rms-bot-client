@@ -13,7 +13,7 @@ import (
 
 const shiftReplyDuration = 10 * time.Second
 
-func (c *archiveCommand) start(ctx context.Context) error {
+func (c *archiveCommand) start(ctx context.Context, user int32) error {
 	c.l.Logf(logger.InfoLevel, "Download camera = %s, time = %s, duration = %d sec", c.ui.Camera, c.ui.Time, c.ui.Duration)
 	// 1. Get archive URL
 	replyUri, err := c.getReplyUri(ctx)
@@ -35,6 +35,7 @@ func (c *archiveCommand) start(ctx context.Context) error {
 		job:       job,
 		cli:       c.interlayer.Services.NewTranscoder(),
 		messenger: c.interlayer.Messenger,
+		user:      user,
 	}
 	c.interlayer.TaskService.StartTask(&t)
 

@@ -22,6 +22,7 @@ type task struct {
 	messenger command.MessageSender
 	ui        uiVideoMessage
 	job       string
+	user      int32
 }
 
 func (t task) Info() string {
@@ -52,6 +53,7 @@ func (t task) trySendVideo(ctx context.Context) (bool, error) {
 	switch resp.Status {
 	case rms_transcoder.GetJobResponse_Failed:
 		msg := command.ReplyText("Произошла проблема при транскодировании запрошенного видео")
+		msg[0].User = t.user
 		return true, t.messenger.SendMessage(ctx, &rms_bot_client.SendMessageRequest{Message: msg[0]}, &emptypb.Empty{})
 	case rms_transcoder.GetJobResponse_Done:
 		content, err := os.ReadFile(filepath.Join(config.Config().ContentDirectory, resp.Destination))
@@ -59,6 +61,7 @@ func (t task) trySendVideo(ctx context.Context) (bool, error) {
 			return true, err
 		}
 		msg := formatVideoMessage(t.ui, content)
+		msg.User = t.user
 		return true, t.messenger.SendMessage(ctx, &rms_bot_client.SendMessageRequest{Message: msg}, &emptypb.Empty{})
 	}
 

@@ -116,7 +116,7 @@ func (c *archiveCommand) doChooseDuration(ctx command.Context) (bool, []*communi
 
 	c.dur = dur
 	c.ui.Duration = uint(dur)
-	if err = c.start(ctx.Ctx); err != nil {
+	if err = c.start(ctx.Ctx, ctx.UserID); err != nil {
 		c.l.Logf(logger.ErrorLevel, "Start archive download failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
 	}
