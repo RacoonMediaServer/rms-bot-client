@@ -25,9 +25,9 @@ func parseDay(day string) (time.Time, bool) {
 }
 
 func parseTime(tm string) (time.Duration, bool) {
-	parsed, err := time.ParseInLocation("15:04:05", tm, time.Local)
+	t, err := time.ParseInLocation("15:04:05", tm, time.Local)
 	if err != nil {
 		return 0, false
 	}
-	return time.Duration(parsed.Unix()) * time.Second, true
+	return time.Duration(t.Hour())*time.Hour + time.Duration(t.Minute())*time.Minute + time.Duration(t.Second())*time.Second, true
 }
