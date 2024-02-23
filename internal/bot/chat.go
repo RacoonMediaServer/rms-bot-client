@@ -4,25 +4,24 @@ import (
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
-	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
 	"go-micro.dev/v4/logger"
 )
 
 type sendFunc func(msg *communication.BotMessage)
 
 type chat struct {
-	l    logger.Logger
-	f    servicemgr.ServiceFactory
-	send sendFunc
+	l          logger.Logger
+	interlayer command.Interlayer
+	send       sendFunc
 
 	e *execution
 }
 
-func newChat(user int32, f servicemgr.ServiceFactory, send sendFunc) *chat {
+func newChat(user int32, interlayer command.Interlayer, send sendFunc) *chat {
 	return &chat{
-		l:    logger.DefaultLogger.Fields(map[string]interface{}{"chat": user}),
-		f:    f,
-		send: send,
+		l:          logger.DefaultLogger.Fields(map[string]interface{}{"chat": user}),
+		interlayer: interlayer,
+		send:       send,
 	}
 }
 
@@ -34,10 +33,6 @@ func (c *chat) processMessage(msg *communication.UserMessage) {
 	c.l.Logf(logger.InfoLevel, "Got message: %s", msg.Text)
 	args := command.Arguments{}
 
-	interlayer := command.Interlayer{
-		Services: c.f,
-	}
-
 	if command.IsCommand(msg.Text) {
 		// отменяем предыдущую команду
 		if c.e != nil {
@@ -47,7 +42,7 @@ func (c *chat) processMessage(msg *communication.UserMessage) {
 
 		cmdID := ""
 		cmdID, args = command.Parse(msg.Text)
-		cmd, err := commands.NewCommand(cmdID, interlayer, c.l)
+		cmd, err := commands.NewCommand(cmdID, c.interlayer, c.l)
 		if err != nil {
 			c.replyText("Неизвестная команда, всегда можно набрать /help...")
 			return
@@ -59,7 +54,7 @@ func (c *chat) processMessage(msg *communication.UserMessage) {
 			c.e = nil
 			if msg.Attachment != nil {
 				c.l.Logf(logger.InfoLevel, "Got file: %s [ %d bytes ]", msg.Attachment.MimeType, len(msg.Attachment.Content))
-				cmd, err := commands.NewCommand("file", interlayer, c.l)
+				cmd, err := commands.NewCommand("file", c.interlayer, c.l)
 				if err != nil {
 					c.replyText(command.SomethingWentWrong)
 					return

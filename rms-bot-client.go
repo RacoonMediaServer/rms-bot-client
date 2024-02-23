@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/RacoonMediaServer/rms-bot-client/internal/background"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/bot"
+	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/config"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/session"
 	rms_bot_client "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-bot-client"
@@ -53,11 +55,17 @@ func main() {
 		_ = logger.Init(logger.WithLevel(logger.DebugLevel))
 	}
 
+	backService := background.NewService()
+	interlayer := command.Interlayer{
+		Services:    servicemgr.NewServiceFactory(service),
+		TaskService: backService,
+	}
+
 	cfg := config.Config()
 	serverSession := session.New(cfg.Remote, cfg.Device)
 	defer serverSession.Shutdown()
 
-	botInstance := bot.New(serverSession, servicemgr.NewServiceFactory(service))
+	botInstance := bot.New(serverSession, interlayer)
 	defer botInstance.Shutdown()
 
 	// регистрируем хендлеры
@@ -68,4 +76,6 @@ func main() {
 	if err := service.Run(); err != nil {
 		logger.Fatalf("Run service failed: %s", err)
 	}
+
+	backService.Stop()
 }

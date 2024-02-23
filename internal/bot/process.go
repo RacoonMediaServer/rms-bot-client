@@ -29,7 +29,7 @@ func (bot *Bot) incomingMessage(msg *communication.UserMessage) {
 			m.User = msg.User
 			bot.srv.Send() <- m
 		}
-		chat = newChat(msg.User, bot.f, fn)
+		chat = newChat(msg.User, bot.interlayer, fn)
 		bot.chats[msg.User] = chat
 	}
 
