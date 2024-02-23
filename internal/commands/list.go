@@ -15,7 +15,6 @@ import (
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/tasks"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/unlink"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/updates"
-	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
 	"go-micro.dev/v4/logger"
 )
 
@@ -40,10 +39,10 @@ func init() {
 	commandMap[archive.Command.ID] = archive.Command
 }
 
-func NewCommand(commandID string, f servicemgr.ServiceFactory, l logger.Logger) (command.Command, error) {
+func NewCommand(commandID string, interlayer command.Interlayer, l logger.Logger) (command.Command, error) {
 	cmd, ok := commandMap[commandID]
 	if !ok {
 		return nil, ErrCommandNotFound
 	}
-	return cmd.Factory(f, l), nil
+	return cmd.Factory(interlayer, l), nil
 }

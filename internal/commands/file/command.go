@@ -34,9 +34,9 @@ func (c *fileCommand) Do(ctx command.Context) (bool, []*communication.BotMessage
 	return c.h.Do(ctx)
 }
 
-func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
+func New(interlayer command.Interlayer, l logger.Logger) command.Command {
 	return &fileCommand{
-		f: f,
+		f: interlayer.Services,
 		l: l.Fields(map[string]interface{}{"command": "file"}),
 	}
 }

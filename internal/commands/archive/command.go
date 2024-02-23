@@ -31,9 +31,9 @@ func (c *archiveCommand) Do(ctx command.Context) (done bool, messages []*communi
 	return c.fn[c.state](ctx)
 }
 
-func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
+func New(interlayer command.Interlayer, l logger.Logger) command.Command {
 	c := &archiveCommand{
-		f:       f,
+		f:       interlayer.Services,
 		l:       l.Fields(map[string]interface{}{"command": "archive"}),
 		cameras: make(map[string]uint32),
 	}

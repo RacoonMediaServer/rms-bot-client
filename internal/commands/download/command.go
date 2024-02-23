@@ -228,9 +228,9 @@ func (d *downloadCommand) doWaitFile(ctx command.Context) (bool, []*communicatio
 	return true, command.ReplyText("Скачивание началось")
 }
 
-func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
+func New(interlayer command.Interlayer, l logger.Logger) command.Command {
 	d := &downloadCommand{
-		f: f,
+		f: interlayer.Services,
 		l: l.Fields(map[string]interface{}{"command": "download"}),
 	}
 

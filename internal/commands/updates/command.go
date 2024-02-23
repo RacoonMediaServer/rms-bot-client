@@ -38,9 +38,9 @@ func (u *updatesCommand) Do(ctx command.Context) (bool, []*communication.BotMess
 	return true, messages
 }
 
-func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
+func New(interlayer command.Interlayer, l logger.Logger) command.Command {
 	return &updatesCommand{
-		f: f,
+		f: interlayer.Services,
 		l: l.Fields(map[string]interface{}{"command": "updates"}),
 	}
 }

@@ -6,4 +6,8 @@ import (
 )
 
 // Factory can create Command of specified type. Factory knows all about specific command
-type Factory func(f servicemgr.ServiceFactory, l logger.Logger) Command
+type Factory func(interlayer Interlayer, l logger.Logger) Command
+
+type Interlayer struct {
+	Services servicemgr.ServiceFactory
+}

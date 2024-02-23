@@ -142,11 +142,11 @@ func (n *tasksCommand) stateWaitSnoozeDate(ctx command.Context) (bool, []*commun
 	return true, command.ReplyText("Задача отложена")
 }
 
-func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
+func New(interlayer command.Interlayer, l logger.Logger) command.Command {
 	tc := &tasksCommand{
-		f: f,
+		f: interlayer.Services,
 		l: l.Fields(map[string]interface{}{"command": "tasks"}),
 	}
 
-	return middleware.NewNotesAuthCommand(f, l, tc)
+	return middleware.NewNotesAuthCommand(interlayer, l, tc)
 }

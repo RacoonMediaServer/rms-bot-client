@@ -34,9 +34,9 @@ func (r *removeCommand) Do(ctx command.Context) (bool, []*communication.BotMessa
 	return true, command.ReplyText(command.Removed)
 }
 
-func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
+func New(interlayer command.Interlayer, l logger.Logger) command.Command {
 	return &removeCommand{
-		f: f,
+		f: interlayer.Services,
 		l: l.Fields(map[string]interface{}{"command": "remove"}),
 	}
 }

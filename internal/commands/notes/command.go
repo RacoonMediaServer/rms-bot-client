@@ -79,11 +79,11 @@ func (n *notesCommand) stateWaitText(ctx command.Context) (bool, []*communicatio
 	return true, command.ReplyText("Заметка добавлена")
 }
 
-func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
+func New(interlayer command.Interlayer, l logger.Logger) command.Command {
 	nc := &notesCommand{
-		f: f,
+		f: interlayer.Services,
 		l: l.Fields(map[string]interface{}{"command": "notes"}),
 	}
 
-	return middleware.NewNotesAuthCommand(f, l, nc)
+	return middleware.NewNotesAuthCommand(interlayer, l, nc)
 }

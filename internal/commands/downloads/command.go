@@ -79,9 +79,9 @@ func (d *downloadsCommand) doUp(ctx command.Context) (bool, []*communication.Bot
 	return true, command.ReplyText("Приоритет изменился")
 }
 
-func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
+func New(interlayer command.Interlayer, l logger.Logger) command.Command {
 	return &downloadsCommand{
-		f: f,
+		f: interlayer.Services,
 		l: l.Fields(map[string]interface{}{"command": "downloads"}),
 	}
 }

@@ -66,9 +66,9 @@ func (c *snapshotCommand) doSnapshot(ctx context.Context, cameraName string) (bo
 	return true, []*communication.BotMessage{formatSnapshot(cameraName, resp.Snapshot)}
 }
 
-func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
+func New(interlayer command.Interlayer, l logger.Logger) command.Command {
 	return &snapshotCommand{
-		f:           f,
+		f:           interlayer.Services,
 		l:           l.Fields(map[string]interface{}{"command": "snapshot"}),
 		mapNameToId: make(map[string]uint32),
 	}

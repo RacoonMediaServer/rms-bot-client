@@ -32,9 +32,9 @@ const (
 
 const notesReqTimeout = 10 * time.Second
 
-func NewNotesAuthCommand(f servicemgr.ServiceFactory, l logger.Logger, cmd command.Command) command.Command {
+func NewNotesAuthCommand(interlayer command.Interlayer, l logger.Logger, cmd command.Command) command.Command {
 	return &authMiddleware{
-		f:   f,
+		f:   interlayer.Services,
 		l:   l.Fields(map[string]interface{}{"middleware": "notes-auth"}),
 		cmd: cmd,
 	}

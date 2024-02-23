@@ -49,9 +49,9 @@ func (s *searchCommand) Do(ctx command.Context) (done bool, messages []*communic
 	return false, result
 }
 
-func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
+func New(interlayer command.Interlayer, l logger.Logger) command.Command {
 	return &searchCommand{
-		f: f,
+		f: interlayer.Services,
 		l: l.Fields(map[string]interface{}{"command": "search"}),
 	}
 }

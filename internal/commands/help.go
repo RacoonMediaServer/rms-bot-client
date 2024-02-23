@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
-	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
 	"go-micro.dev/v4/logger"
 	"sort"
 )
@@ -41,6 +40,6 @@ func (h helpCommand) Do(ctx command.Context) (done bool, messages []*communicati
 	}
 }
 
-func newHelpCommand(factory servicemgr.ServiceFactory, l logger.Logger) command.Command {
+func newHelpCommand(interlayer command.Interlayer, l logger.Logger) command.Command {
 	return &helpCommand{}
 }

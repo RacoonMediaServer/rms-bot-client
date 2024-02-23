@@ -34,6 +34,10 @@ func (c *chat) processMessage(msg *communication.UserMessage) {
 	c.l.Logf(logger.InfoLevel, "Got message: %s", msg.Text)
 	args := command.Arguments{}
 
+	interlayer := command.Interlayer{
+		Services: c.f,
+	}
+
 	if command.IsCommand(msg.Text) {
 		// отменяем предыдущую команду
 		if c.e != nil {
@@ -43,7 +47,7 @@ func (c *chat) processMessage(msg *communication.UserMessage) {
 
 		cmdID := ""
 		cmdID, args = command.Parse(msg.Text)
-		cmd, err := commands.NewCommand(cmdID, c.f, c.l)
+		cmd, err := commands.NewCommand(cmdID, interlayer, c.l)
 		if err != nil {
 			c.replyText("Неизвестная команда, всегда можно набрать /help...")
 			return
@@ -55,7 +59,7 @@ func (c *chat) processMessage(msg *communication.UserMessage) {
 			c.e = nil
 			if msg.Attachment != nil {
 				c.l.Logf(logger.InfoLevel, "Got file: %s [ %d bytes ]", msg.Attachment.MimeType, len(msg.Attachment.Content))
-				cmd, err := commands.NewCommand("file", c.f, c.l)
+				cmd, err := commands.NewCommand("file", interlayer, c.l)
 				if err != nil {
 					c.replyText(command.SomethingWentWrong)
 					return

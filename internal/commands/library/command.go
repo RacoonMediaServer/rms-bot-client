@@ -70,9 +70,9 @@ func (s *libraryCommand) Do(ctx command.Context) (bool, []*communication.BotMess
 	return false, messages
 }
 
-func New(f servicemgr.ServiceFactory, l logger.Logger) command.Command {
+func New(interlayer command.Interlayer, l logger.Logger) command.Command {
 	return &libraryCommand{
-		f: f,
+		f: interlayer.Services,
 		l: l.Fields(map[string]interface{}{"command": "library"}),
 	}
 }
