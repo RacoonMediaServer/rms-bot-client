@@ -93,7 +93,7 @@ func (c *archiveCommand) doChooseTime(ctx command.Context) (bool, []*communicati
 		return false, command.ReplyText("Неверно введено время")
 	}
 
-	c.ts.Add(t)
+	c.ts = c.ts.Add(t)
 	c.ui.Time = c.ts.Local().Format(time.RFC3339)
 	ctx.Arguments = ctx.Arguments[1:]
 	c.state = stateChooseDuration
