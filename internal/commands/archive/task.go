@@ -86,5 +86,6 @@ func (t task) handleError(err error) {
 	}
 
 	msg := command.ReplyText("Произошла ошибка, не удалось выгрузить видео")
+	msg[0].User = t.user
 	_ = t.messenger.SendMessage(context.Background(), &rms_bot_client.SendMessageRequest{Message: msg[0]}, &emptypb.Empty{})
 }
