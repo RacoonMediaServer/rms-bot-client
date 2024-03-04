@@ -34,10 +34,12 @@ func (t task) Run(ctx context.Context, l logger.Logger) error {
 	for {
 		select {
 		case <-ctx.Done():
+			t.handleError(ctx.Err())
 			return ctx.Err()
 		case <-time.After(pollInterval):
 			done, err := t.trySendVideo(ctx)
 			if done {
+				t.handleError(err)
 				return err
 			}
 		}
@@ -76,4 +78,13 @@ func (t task) done(ctx context.Context, l logger.Logger) {
 	if _, err := t.cli.CancelJob(ctx, &req, client.WithRequestTimeout(requestTimeout)); err != nil {
 		l.Logf(logger.WarnLevel, "Cancel transcoding job failed")
 	}
+}
+
+func (t task) handleError(err error) {
+	if err == nil {
+		return
+	}
+
+	msg := command.ReplyText("Произошла ошибка, не удалось выгрузить видео")
+	_ = t.messenger.SendMessage(context.Background(), &rms_bot_client.SendMessageRequest{Message: msg[0]}, &emptypb.Empty{})
 }

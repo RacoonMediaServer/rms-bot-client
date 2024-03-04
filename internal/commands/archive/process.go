@@ -3,9 +3,9 @@ package archive
 import (
 	"context"
 	"fmt"
+	"github.com/RacoonMediaServer/rms-packages/pkg/media"
 	rms_cctv "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-cctv"
 	rms_transcoder "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-transcoder"
-	"github.com/RacoonMediaServer/rms-packages/pkg/video"
 	"go-micro.dev/v4/client"
 	"go-micro.dev/v4/logger"
 	"time"
@@ -46,7 +46,7 @@ func (c *archiveCommand) getReplyUri(ctx context.Context) (string, error) {
 	ts := uint64(c.ts.Add(-shiftReplyDuration).UTC().Unix())
 	req := rms_cctv.GetReplayUriRequest{
 		CameraId:  c.camera,
-		Transport: video.Transport_RTSP,
+		Transport: media.Transport_RTSP,
 		Timestamp: &ts,
 	}
 	resp, err := c.interlayer.Services.NewCctv().GetReplayUri(ctx, &req, client.WithRequestTimeout(requestTimeout))
@@ -57,11 +57,13 @@ func (c *archiveCommand) getReplyUri(ctx context.Context) (string, error) {
 }
 
 func (c *archiveCommand) createJob(ctx context.Context, replyUri string) (string, error) {
+	dur := uint32(c.dur)
 	req := rms_transcoder.AddJobRequest{
 		Profile:      "telegram",
 		Source:       replyUri,
 		Destination:  fmt.Sprintf("telegram/%s_%s_%dsec.mp4", c.ui.Camera, c.ui.Time, c.ui.Duration),
 		AutoComplete: false,
+		Duration:     &dur,
 	}
 	resp, err := c.interlayer.Services.NewTranscoder().AddJob(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
