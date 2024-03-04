@@ -36,6 +36,7 @@ func (c *archiveCommand) start(ctx context.Context, user int32) error {
 		cli:       c.interlayer.Services.NewTranscoder(),
 		messenger: c.interlayer.Messenger,
 		user:      user,
+		ui:        c.ui,
 	}
 	c.interlayer.TaskService.StartTask(&t)
 
