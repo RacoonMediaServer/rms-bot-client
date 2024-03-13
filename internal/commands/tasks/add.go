@@ -14,7 +14,7 @@ import (
 const requestTimeout = 20 * time.Second
 
 var AddCommand command.Type = command.Type{
-	ID:      "tasks-add",
+	ID:      "tasks_add",
 	Title:   "Задачи",
 	Help:    "Добавить задачу",
 	Factory: NewAddCommand,
