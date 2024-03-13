@@ -33,7 +33,6 @@ type tasksAddCommand struct {
 	f     servicemgr.ServiceFactory
 	l     logger.Logger
 	title string
-	id    string
 	state state
 	date  time.Time
 }
@@ -46,12 +45,9 @@ func (n *tasksAddCommand) Do(ctx command.Context) (bool, []*communication.BotMes
 		return n.stateWaitTaskText(ctx)
 	case stateWaitTaskDate:
 		return n.stateWaitTaskDate(ctx)
-	case stateWaitSnoozeDate:
-		return n.stateWaitSnoozeDate(ctx)
-
+	default:
+		return true, command.ReplyText(command.SomethingWentWrong)
 	}
-
-	return true, command.ReplyText(command.SomethingWentWrong)
 }
 
 func (n *tasksAddCommand) stateInitial(ctx command.Context) (bool, []*communication.BotMessage) {
@@ -60,40 +56,10 @@ func (n *tasksAddCommand) stateInitial(ctx command.Context) (bool, []*communicat
 		return false, command.ReplyText("Введите описание задачи")
 	}
 
-	switch ctx.Arguments[0] {
-	case "snooze":
-		return n.handleSnoozeCommand(ctx)
-	case "done":
-		return n.handleDoneCommand(ctx)
-	}
+	n.title = ctx.Arguments.String()
+	n.state = stateWaitTaskDate
 
-	return true, command.ReplyText(command.ParseArgumentsFailed)
-}
-
-func (n *tasksAddCommand) handleSnoozeCommand(ctx command.Context) (bool, []*communication.BotMessage) {
-	if len(ctx.Arguments) < 2 {
-		return true, command.ReplyText(command.ParseArgumentsFailed)
-	}
-
-	n.id = ctx.Arguments[1]
-	n.state = stateWaitSnoozeDate
-
-	return false, []*communication.BotMessage{pickSnoozeDateMessage}
-}
-
-func (n *tasksAddCommand) handleDoneCommand(ctx command.Context) (bool, []*communication.BotMessage) {
-	if len(ctx.Arguments) < 2 {
-		return true, command.ReplyText(command.ParseArgumentsFailed)
-	}
-
-	req := rms_notes.DoneTaskRequest{Id: ctx.Arguments[1], User: ctx.UserID}
-	_, err := n.f.NewNotes().DoneTask(ctx, &req, client.WithRequestTimeout(requestTimeout))
-	if err != nil {
-		n.l.Logf(logger.ErrorLevel, "Done task failed: %s", err)
-		return true, command.ReplyText(command.SomethingWentWrong)
-	}
-
-	return true, command.ReplyText("Задача завершена")
+	return false, []*communication.BotMessage{pickTaskDateMessage}
 }
 
 func (n *tasksAddCommand) stateWaitTaskText(ctx command.Context) (bool, []*communication.BotMessage) {
@@ -122,24 +88,6 @@ func (n *tasksAddCommand) stateWaitTaskDate(ctx command.Context) (bool, []*commu
 	}
 
 	return true, command.ReplyText("Задача добавлена")
-}
-
-func (n *tasksAddCommand) stateWaitSnoozeDate(ctx command.Context) (bool, []*communication.BotMessage) {
-	date, err := parseSnoozeDate(ctx.Arguments.String())
-	if err != nil {
-		return false, command.ReplyText("Не удалось распарсить дату")
-	}
-	dateString := date.Format(obsidianDateFormat)
-
-	req := rms_notes.SnoozeTaskRequest{Id: n.id, DueDate: &dateString, User: ctx.UserID}
-
-	_, err = n.f.NewNotes().SnoozeTask(ctx, &req, client.WithRequestTimeout(requestTimeout))
-	if err != nil {
-		n.l.Logf(logger.ErrorLevel, "Snooze task failed: %s", err)
-		return true, command.ReplyText(command.SomethingWentWrong)
-	}
-
-	return true, command.ReplyText("Задача отложена")
 }
 
 func NewAddCommand(interlayer command.Interlayer, l logger.Logger) command.Command {
