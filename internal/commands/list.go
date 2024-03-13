@@ -32,7 +32,8 @@ func init() {
 	commandMap[downloads.Command.ID] = downloads.Command
 	commandMap[updates.Command.ID] = updates.Command
 	commandMap[notes.Command.ID] = notes.Command
-	commandMap[tasks.Command.ID] = tasks.Command
+	commandMap[tasks.AddCommand.ID] = tasks.AddCommand
+	commandMap[tasks.ListCommand.ID] = tasks.ListCommand
 	commandMap[unlink.Command.ID] = unlink.Command
 	commandMap[snapshot.Command.ID] = snapshot.Command
 	commandMap[file.Command.ID] = file.Command

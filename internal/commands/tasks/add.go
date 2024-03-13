@@ -13,11 +13,11 @@ import (
 
 const requestTimeout = 20 * time.Second
 
-var Command command.Type = command.Type{
-	ID:      "tasks",
+var AddCommand command.Type = command.Type{
+	ID:      "tasks-add",
 	Title:   "Задачи",
 	Help:    "Добавить задачу",
-	Factory: New,
+	Factory: NewAddCommand,
 }
 
 type state int
@@ -29,7 +29,7 @@ const (
 	stateWaitSnoozeDate
 )
 
-type tasksCommand struct {
+type tasksAddCommand struct {
 	f     servicemgr.ServiceFactory
 	l     logger.Logger
 	title string
@@ -38,7 +38,7 @@ type tasksCommand struct {
 	date  time.Time
 }
 
-func (n *tasksCommand) Do(ctx command.Context) (bool, []*communication.BotMessage) {
+func (n *tasksAddCommand) Do(ctx command.Context) (bool, []*communication.BotMessage) {
 	switch n.state {
 	case stateInitial:
 		return n.stateInitial(ctx)
@@ -54,7 +54,7 @@ func (n *tasksCommand) Do(ctx command.Context) (bool, []*communication.BotMessag
 	return true, command.ReplyText(command.SomethingWentWrong)
 }
 
-func (n *tasksCommand) stateInitial(ctx command.Context) (bool, []*communication.BotMessage) {
+func (n *tasksAddCommand) stateInitial(ctx command.Context) (bool, []*communication.BotMessage) {
 	if len(ctx.Arguments) == 0 {
 		n.state = stateWaitTaskText
 		return false, command.ReplyText("Введите описание задачи")
@@ -70,7 +70,7 @@ func (n *tasksCommand) stateInitial(ctx command.Context) (bool, []*communication
 	return true, command.ReplyText(command.ParseArgumentsFailed)
 }
 
-func (n *tasksCommand) handleSnoozeCommand(ctx command.Context) (bool, []*communication.BotMessage) {
+func (n *tasksAddCommand) handleSnoozeCommand(ctx command.Context) (bool, []*communication.BotMessage) {
 	if len(ctx.Arguments) < 2 {
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
@@ -81,7 +81,7 @@ func (n *tasksCommand) handleSnoozeCommand(ctx command.Context) (bool, []*commun
 	return false, []*communication.BotMessage{pickSnoozeDateMessage}
 }
 
-func (n *tasksCommand) handleDoneCommand(ctx command.Context) (bool, []*communication.BotMessage) {
+func (n *tasksAddCommand) handleDoneCommand(ctx command.Context) (bool, []*communication.BotMessage) {
 	if len(ctx.Arguments) < 2 {
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
@@ -96,14 +96,14 @@ func (n *tasksCommand) handleDoneCommand(ctx command.Context) (bool, []*communic
 	return true, command.ReplyText("Задача завершена")
 }
 
-func (n *tasksCommand) stateWaitTaskText(ctx command.Context) (bool, []*communication.BotMessage) {
+func (n *tasksAddCommand) stateWaitTaskText(ctx command.Context) (bool, []*communication.BotMessage) {
 	n.title = ctx.Arguments.String()
 	n.state = stateWaitTaskDate
 
 	return false, []*communication.BotMessage{pickTaskDateMessage}
 }
 
-func (n *tasksCommand) stateWaitTaskDate(ctx command.Context) (bool, []*communication.BotMessage) {
+func (n *tasksAddCommand) stateWaitTaskDate(ctx command.Context) (bool, []*communication.BotMessage) {
 	date, err := parseDoneDate(ctx.Arguments.String())
 	if err != nil {
 		return false, command.ReplyText("Не удалось распарсить дату")
@@ -124,7 +124,7 @@ func (n *tasksCommand) stateWaitTaskDate(ctx command.Context) (bool, []*communic
 	return true, command.ReplyText("Задача добавлена")
 }
 
-func (n *tasksCommand) stateWaitSnoozeDate(ctx command.Context) (bool, []*communication.BotMessage) {
+func (n *tasksAddCommand) stateWaitSnoozeDate(ctx command.Context) (bool, []*communication.BotMessage) {
 	date, err := parseSnoozeDate(ctx.Arguments.String())
 	if err != nil {
 		return false, command.ReplyText("Не удалось распарсить дату")
@@ -142,10 +142,10 @@ func (n *tasksCommand) stateWaitSnoozeDate(ctx command.Context) (bool, []*commun
 	return true, command.ReplyText("Задача отложена")
 }
 
-func New(interlayer command.Interlayer, l logger.Logger) command.Command {
-	tc := &tasksCommand{
+func NewAddCommand(interlayer command.Interlayer, l logger.Logger) command.Command {
+	tc := &tasksAddCommand{
 		f: interlayer.Services,
-		l: l.Fields(map[string]interface{}{"command": "tasks"}),
+		l: l.Fields(map[string]interface{}{"command": "tasks-add"}),
 	}
 
 	return middleware.NewNotesAuthCommand(interlayer, l, tc)
