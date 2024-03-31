@@ -6,5 +6,6 @@
     "path": "bot"
   },
   "device": "",
-  "content-directory": "content"
+  "content-directory": "content",
+  "voice-recognition": true
 }

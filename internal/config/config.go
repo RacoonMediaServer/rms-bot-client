@@ -15,6 +15,7 @@ type Configuration struct {
 	Device           string
 	Remote           Remote
 	ContentDirectory string `json:"content-directory"`
+	VoiceRecognition bool   `json:"voice-recognition"`
 }
 
 var config Configuration

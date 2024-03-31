@@ -30,6 +30,7 @@ func (bot *Bot) incomingMessage(msg *communication.UserMessage) {
 			bot.srv.Send() <- m
 		}
 		chat = newChat(msg.User, bot.interlayer, fn)
+		chat.voiceRecognition = bot.voiceRecognition
 		bot.chats[msg.User] = chat
 	}
 

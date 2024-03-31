@@ -65,7 +65,7 @@ func main() {
 	serverSession := session.New(cfg.Remote, cfg.Device)
 	defer serverSession.Shutdown()
 
-	botInstance := bot.New(serverSession, interlayer)
+	botInstance := bot.New(serverSession, interlayer, cfg.VoiceRecognition)
 	defer botInstance.Shutdown()
 
 	// регистрируем хендлеры

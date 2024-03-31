@@ -25,18 +25,20 @@ type Bot struct {
 	cancel     context.CancelFunc
 	wg         sync.WaitGroup
 
-	chats map[int32]*chat
-	code  chan string
+	voiceRecognition bool
+	chats            map[int32]*chat
+	code             chan string
 }
 
 // New creates a new chat bot
-func New(server Server, interlayer command.Interlayer) *Bot {
+func New(server Server, interlayer command.Interlayer, voiceRecognitionEnabled bool) *Bot {
 	bot := &Bot{
-		l:          logger.DefaultLogger.Fields(map[string]interface{}{"from": "bot"}),
-		interlayer: interlayer,
-		srv:        server,
-		chats:      map[int32]*chat{},
-		code:       make(chan string),
+		l:                logger.DefaultLogger.Fields(map[string]interface{}{"from": "bot"}),
+		interlayer:       interlayer,
+		srv:              server,
+		chats:            map[int32]*chat{},
+		code:             make(chan string),
+		voiceRecognition: voiceRecognitionEnabled,
 	}
 	bot.interlayer.Messenger = bot
 	bot.ctx, bot.cancel = context.WithCancel(context.Background())
