@@ -2,8 +2,10 @@ package commands
 
 import (
 	"errors"
+
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/archive"
+	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/cctv"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/download"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/downloads"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/commands/file"
@@ -38,6 +40,7 @@ func init() {
 	commandMap[snapshot.Command.ID] = snapshot.Command
 	commandMap[file.Command.ID] = file.Command
 	commandMap[archive.Command.ID] = archive.Command
+	commandMap[cctv.Command.ID] = cctv.Command
 }
 
 func NewCommand(commandID string, interlayer command.Interlayer, l logger.Logger) (command.Command, error) {

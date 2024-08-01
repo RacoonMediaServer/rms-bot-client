@@ -3,12 +3,13 @@ package archive
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/RacoonMediaServer/rms-packages/pkg/media"
 	rms_cctv "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-cctv"
 	rms_transcoder "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-transcoder"
 	"go-micro.dev/v4/client"
 	"go-micro.dev/v4/logger"
-	"time"
 )
 
 const shiftReplyDuration = 10 * time.Second
@@ -50,7 +51,7 @@ func (c *archiveCommand) getReplyUri(ctx context.Context) (string, error) {
 		Transport: media.Transport_RTSP,
 		Timestamp: &ts,
 	}
-	resp, err := c.interlayer.Services.NewCctv().GetReplayUri(ctx, &req, client.WithRequestTimeout(requestTimeout))
+	resp, err := c.interlayer.Services.NewCctvCameras().GetReplayUri(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		return "", err
 	}

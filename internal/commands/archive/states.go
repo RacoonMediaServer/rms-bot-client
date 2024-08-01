@@ -1,13 +1,14 @@
 package archive
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	"go-micro.dev/v4/client"
 	"go-micro.dev/v4/logger"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"strconv"
-	"time"
 )
 
 type state int
@@ -25,7 +26,7 @@ const requestTimeout = 30 * time.Second
 func (c *archiveCommand) doInitial(ctx command.Context) (bool, []*communication.BotMessage) {
 	c.state = stateChooseCamera
 
-	list, err := c.interlayer.Services.NewCctv().GetCameras(ctx.Ctx, &emptypb.Empty{}, client.WithRequestTimeout(requestTimeout))
+	list, err := c.interlayer.Services.NewCctvCameras().GetCameras(ctx.Ctx, &emptypb.Empty{}, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		c.l.Logf(logger.ErrorLevel, "Get cameras failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)

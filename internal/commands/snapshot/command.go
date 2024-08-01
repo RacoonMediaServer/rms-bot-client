@@ -2,6 +2,8 @@ package snapshot
 
 import (
 	"context"
+	"time"
+
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_cctv "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-cctv"
@@ -9,7 +11,6 @@ import (
 	"go-micro.dev/v4/client"
 	"go-micro.dev/v4/logger"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"time"
 )
 
 const requestTimeout = 20 * time.Second
@@ -39,7 +40,7 @@ func (c *snapshotCommand) Do(ctx command.Context) (done bool, messages []*commun
 }
 
 func (c *snapshotCommand) doListCameras(ctx context.Context) (bool, []*communication.BotMessage) {
-	list, err := c.f.NewCctv().GetCameras(ctx, &emptypb.Empty{}, client.WithRequestTimeout(requestTimeout))
+	list, err := c.f.NewCctvCameras().GetCameras(ctx, &emptypb.Empty{}, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		c.l.Logf(logger.ErrorLevel, "Get cameras failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
@@ -58,7 +59,7 @@ func (c *snapshotCommand) doSnapshot(ctx context.Context, cameraName string) (bo
 		return true, command.ReplyText("Камера с таким именем не найдена")
 	}
 
-	resp, err := c.f.NewCctv().GetSnapshot(ctx, &rms_cctv.GetSnapshotRequest{CameraId: id}, client.WithRequestTimeout(requestTimeout))
+	resp, err := c.f.NewCctvCameras().GetSnapshot(ctx, &rms_cctv.GetSnapshotRequest{CameraId: id}, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		c.l.Logf(logger.ErrorLevel, "Get snapshot failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
