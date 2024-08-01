@@ -2,9 +2,12 @@ package command
 
 import (
 	"context"
-	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	"time"
+
+	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 )
+
+const BroadcastMessage int32 = 1
 
 type Context struct {
 	Ctx        context.Context

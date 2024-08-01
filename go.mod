@@ -3,7 +3,7 @@ module github.com/RacoonMediaServer/rms-bot-client
 go 1.20
 
 require (
-	github.com/RacoonMediaServer/rms-packages v1.13.7
+	github.com/RacoonMediaServer/rms-packages v1.13.8
 	github.com/go-micro/plugins/v4/registry/etcd v1.2.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0

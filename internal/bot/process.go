@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	"go-micro.dev/v4/logger"
 )
@@ -26,7 +27,11 @@ func (bot *Bot) incomingMessage(msg *communication.UserMessage) {
 	chat, ok := bot.chats[msg.User]
 	if !ok {
 		fn := func(m *communication.BotMessage) {
-			m.User = msg.User
+			if m.User == command.BroadcastMessage {
+				m.User = 0
+			} else {
+				m.User = msg.User
+			}
 			bot.srv.Send() <- m
 		}
 		chat = newChat(msg.User, bot.interlayer, fn)

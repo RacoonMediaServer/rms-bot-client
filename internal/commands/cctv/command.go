@@ -2,6 +2,7 @@ package cctv
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
@@ -60,7 +61,21 @@ func (c cctvCommand) Do(ctx command.Context) (bool, []*communication.BotMessage)
 		return false, command.ReplyText(command.SomethingWentWrong)
 	}
 
-	return true, command.ReplyText("Режим установлен")
+	if nobodyAtHomeMode {
+		msg := communication.BotMessage{
+			Text: fmt.Sprintf("<b>%s</b>", nobodyAtHome),
+			Pin:  communication.BotMessage_ThisMessage,
+			User: command.BroadcastMessage,
+		}
+		return true, []*communication.BotMessage{&msg}
+	}
+
+	msg := communication.BotMessage{
+		Text: fmt.Sprintf("<b>%s</b>", iamAtHome),
+		Pin:  communication.BotMessage_Drop,
+		User: command.BroadcastMessage,
+	}
+	return true, []*communication.BotMessage{&msg}
 }
 
 func (c cctvCommand) setNobodyAtHomeMode(ctx context.Context, active bool) error {
