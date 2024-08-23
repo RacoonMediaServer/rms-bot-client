@@ -48,6 +48,8 @@ func (c *tasksListCommand) stateInitial(ctx command.Context) (bool, []*communica
 	switch ctx.Arguments[0] {
 	case "snooze":
 		return c.handleSnoozeCommand(ctx)
+	case "remove":
+		return c.handleRemoveCommand(ctx)
 	case "done":
 		return c.handleDoneCommand(ctx)
 	}
@@ -79,6 +81,21 @@ func (c *tasksListCommand) handleDoneCommand(ctx command.Context) (bool, []*comm
 	}
 
 	return true, command.ReplyText("Задача завершена")
+}
+
+func (c *tasksListCommand) handleRemoveCommand(ctx command.Context) (bool, []*communication.BotMessage) {
+	if len(ctx.Arguments) < 2 {
+		return true, command.ReplyText(command.ParseArgumentsFailed)
+	}
+
+	req := rms_notes.RemoveTaskRequest{Id: ctx.Arguments[1], User: ctx.UserID}
+	_, err := c.f.NewNotes().RemoveTask(ctx, &req, client.WithRequestTimeout(requestTimeout))
+	if err != nil {
+		c.l.Logf(logger.ErrorLevel, "Remove task failed: %s", err)
+		return true, command.ReplyText(command.SomethingWentWrong)
+	}
+
+	return true, command.ReplyText("Задача удалена")
 }
 
 func (c *tasksListCommand) stateWaitSnoozeDate(ctx command.Context) (bool, []*communication.BotMessage) {
