@@ -2,12 +2,13 @@ package bot
 
 import (
 	"context"
+	"sync"
+
 	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_bot_client "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-bot-client"
 	"go-micro.dev/v4/logger"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"sync"
 )
 
 // Server is required methods for server session implementation
@@ -51,6 +52,7 @@ func New(server Server, interlayer command.Interlayer, voiceRecognitionEnabled b
 }
 
 func (bot *Bot) GetIdentificationCode(ctx context.Context, empty *emptypb.Empty, response *rms_bot_client.GetIdentificationCodeResponse) error {
+	bot.l.Log(logger.InfoLevel, "--> GetIdentificationCode()")
 	msg := &communication.BotMessage{}
 	msg.Type = communication.MessageType_AcquiringCode
 
