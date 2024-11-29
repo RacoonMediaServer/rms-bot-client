@@ -3,6 +3,7 @@ package archive
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/RacoonMediaServer/rms-packages/pkg/media"
 	rms_cctv "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-cctv"
@@ -10,6 +11,8 @@ import (
 	"go-micro.dev/v4/client"
 	"go-micro.dev/v4/logger"
 )
+
+const shiftTime = 5 * time.Second
 
 func (c *archiveCommand) start(ctx context.Context, user int32) error {
 	c.l.Logf(logger.InfoLevel, "Download camera = %s, time = %s, duration = %d sec", c.ui.Camera, c.ui.Time, c.ui.Duration)
@@ -41,7 +44,7 @@ func (c *archiveCommand) start(ctx context.Context, user int32) error {
 }
 
 func (c *archiveCommand) getReplyUri(ctx context.Context) (uri string, offset uint32, err error) {
-	ts := uint64(c.ts.UTC().Unix())
+	ts := uint64(c.ts.Add(-shiftTime).UTC().Unix())
 	req := rms_cctv.GetReplayUriRequest{
 		CameraId:  c.camera,
 		Transport: media.Transport_RTSP,
