@@ -2,7 +2,8 @@ package bot
 
 import (
 	"context"
-	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
+
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 )
 

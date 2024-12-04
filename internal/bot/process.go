@@ -1,7 +1,7 @@
 package bot
 
 import (
-	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	"go-micro.dev/v4/logger"
 )
@@ -34,7 +34,7 @@ func (bot *Bot) incomingMessage(msg *communication.UserMessage) {
 			}
 			bot.srv.Send() <- m
 		}
-		chat = newChat(msg.User, bot.interlayer, fn)
+		chat = newChat(bot.cmdf, msg.User, bot.interlayer, fn)
 		chat.voiceRecognition = bot.voiceRecognition
 		bot.chats[msg.User] = chat
 	}

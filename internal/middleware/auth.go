@@ -1,13 +1,14 @@
 package middleware
 
 import (
-	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
+	"time"
+
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_notes "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-notes"
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
 	"go-micro.dev/v4/client"
 	"go-micro.dev/v4/logger"
-	"time"
 )
 
 type authMiddleware struct {

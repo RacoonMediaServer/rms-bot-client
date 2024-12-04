@@ -3,12 +3,13 @@ package bot
 import (
 	"context"
 	"fmt"
-	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
-	"github.com/RacoonMediaServer/rms-bot-client/internal/commands"
+	"time"
+
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/command"
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_speech "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-speech"
 	"go-micro.dev/v4/logger"
-	"time"
 )
 
 const voiceRecognitionTimeoutSec = 120
@@ -20,15 +21,17 @@ type chat struct {
 	interlayer       command.Interlayer
 	send             sendFunc
 	voiceRecognition bool
+	cmdf             commands.Factory
 
 	e *execution
 }
 
-func newChat(user int32, interlayer command.Interlayer, send sendFunc) *chat {
+func newChat(cmdf commands.Factory, user int32, interlayer command.Interlayer, send sendFunc) *chat {
 	return &chat{
 		l:          logger.DefaultLogger.Fields(map[string]interface{}{"chat": user}),
 		interlayer: interlayer,
 		send:       send,
+		cmdf:       cmdf,
 	}
 }
 
@@ -54,7 +57,7 @@ func (c *chat) processMessage(msg *communication.UserMessage) {
 
 		cmdID := ""
 		cmdID, args = command.Parse(msg.Text)
-		cmd, err := commands.NewCommand(cmdID, c.interlayer, c.l)
+		cmd, err := c.cmdf.NewCommand(cmdID, c.interlayer, c.l)
 		if err != nil {
 			c.replyText("Неизвестная команда, всегда можно набрать /help...")
 			return
@@ -66,7 +69,7 @@ func (c *chat) processMessage(msg *communication.UserMessage) {
 			c.e = nil
 			if msg.Attachment != nil {
 				c.l.Logf(logger.InfoLevel, "Got file: %s [ %d bytes ]", msg.Attachment.MimeType, len(msg.Attachment.Content))
-				cmd, err := commands.NewCommand("file", c.interlayer, c.l)
+				cmd, err := c.cmdf.NewCommand("file", c.interlayer, c.l)
 				if err != nil {
 					c.replyText(command.SomethingWentWrong)
 					return

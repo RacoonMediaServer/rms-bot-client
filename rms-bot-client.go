@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/RacoonMediaServer/rms-bot-client/internal/background"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/bot"
-	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
+	"github.com/RacoonMediaServer/rms-bot-client/internal/cmdset"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/config"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/session"
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/command"
 	rms_bot_client "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-bot-client"
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
 	"github.com/urfave/cli/v2"
@@ -65,7 +67,9 @@ func main() {
 	serverSession := session.New(cfg.Remote, cfg.Device)
 	defer serverSession.Shutdown()
 
-	botInstance := bot.New(serverSession, interlayer, cfg.VoiceRecognition)
+	commandFactory := cmdset.New()
+
+	botInstance := bot.New(serverSession, interlayer, commandFactory, cfg.VoiceRecognition)
 	defer botInstance.Shutdown()
 
 	// регистрируем хендлеры

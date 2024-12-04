@@ -4,7 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/RacoonMediaServer/rms-bot-client/internal/command"
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/command"
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_bot_client "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-bot-client"
 	"go-micro.dev/v4/logger"
@@ -29,10 +30,11 @@ type Bot struct {
 	voiceRecognition bool
 	chats            map[int32]*chat
 	code             chan string
+	cmdf             commands.Factory
 }
 
 // New creates a new chat bot
-func New(server Server, interlayer command.Interlayer, voiceRecognitionEnabled bool) *Bot {
+func New(server Server, interlayer command.Interlayer, cmdf commands.Factory, voiceRecognitionEnabled bool) *Bot {
 	bot := &Bot{
 		l:                logger.DefaultLogger.Fields(map[string]interface{}{"from": "bot"}),
 		interlayer:       interlayer,
@@ -40,6 +42,7 @@ func New(server Server, interlayer command.Interlayer, voiceRecognitionEnabled b
 		chats:            map[int32]*chat{},
 		code:             make(chan string),
 		voiceRecognition: voiceRecognitionEnabled,
+		cmdf:             cmdf,
 	}
 	bot.interlayer.Messenger = bot
 	bot.ctx, bot.cancel = context.WithCancel(context.Background())
