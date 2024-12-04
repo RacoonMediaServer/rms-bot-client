@@ -13,7 +13,7 @@ func (bot *Bot) process() {
 			bot.l.Log(logger.DebugLevel, "Shutdown...")
 			return
 
-		case msg := <-bot.srv.Receive():
+		case msg := <-bot.s.Transport.Receive():
 			bot.incomingMessage(msg)
 		}
 	}
@@ -32,10 +32,10 @@ func (bot *Bot) incomingMessage(msg *communication.UserMessage) {
 			} else {
 				m.User = msg.User
 			}
-			bot.srv.Send() <- m
+			bot.s.Transport.Send() <- m
 		}
-		chat = newChat(bot.cmdf, msg.User, bot.interlayer, fn)
-		chat.voiceRecognition = bot.voiceRecognition
+		chat = newChat(bot.s.CmdFactory, msg.User, bot.s.Interlayer, fn)
+		chat.recognizer = bot.s.SpeechRecognizer
 		bot.chats[msg.User] = chat
 	}
 

@@ -4,47 +4,34 @@ import (
 	"context"
 	"sync"
 
-	"github.com/RacoonMediaServer/rms-bot-client/pkg/command"
-	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_bot_client "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-bot-client"
 	"go-micro.dev/v4/logger"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// Server is required methods for server session implementation
-type Server interface {
-	Receive() <-chan *communication.UserMessage
-	Send() chan<- *communication.BotMessage
-}
-
 // Bot is chat bot delivery entity
 type Bot struct {
-	l          logger.Logger
-	srv        Server
-	interlayer command.Interlayer
-	ctx        context.Context
-	cancel     context.CancelFunc
-	wg         sync.WaitGroup
+	l      logger.Logger
+	ctx    context.Context
+	cancel context.CancelFunc
+	wg     sync.WaitGroup
+	s      Settings
 
-	voiceRecognition bool
-	chats            map[int32]*chat
-	code             chan string
-	cmdf             commands.Factory
+	chats map[int32]*chat
+	code  chan string
 }
 
 // New creates a new chat bot
-func New(server Server, interlayer command.Interlayer, cmdf commands.Factory, voiceRecognitionEnabled bool) *Bot {
+func New(settings Settings) *Bot {
 	bot := &Bot{
-		l:                logger.DefaultLogger.Fields(map[string]interface{}{"from": "bot"}),
-		interlayer:       interlayer,
-		srv:              server,
-		chats:            map[int32]*chat{},
-		code:             make(chan string),
-		voiceRecognition: voiceRecognitionEnabled,
-		cmdf:             cmdf,
+		l:     logger.DefaultLogger.Fields(map[string]interface{}{"from": "bot"}),
+		s:     settings,
+		chats: map[int32]*chat{},
+		code:  make(chan string),
 	}
-	bot.interlayer.Messenger = bot
+	settings.Interlayer.Messenger = bot
+
 	bot.ctx, bot.cancel = context.WithCancel(context.Background())
 	bot.wg.Add(1)
 	go func() {
@@ -60,7 +47,7 @@ func (bot *Bot) GetIdentificationCode(ctx context.Context, empty *emptypb.Empty,
 	msg.Type = communication.MessageType_AcquiringCode
 
 	select {
-	case bot.srv.Send() <- msg:
+	case bot.s.Transport.Send() <- msg:
 	case <-ctx.Done():
 		return ctx.Err()
 	}
@@ -78,7 +65,7 @@ func (bot *Bot) GetIdentificationCode(ctx context.Context, empty *emptypb.Empty,
 func (bot *Bot) SendMessage(ctx context.Context, req *rms_bot_client.SendMessageRequest, empty *emptypb.Empty) error {
 	bot.l.Logf(logger.InfoLevel, "External outgoing message: '%s'", req.Message.Text)
 	select {
-	case bot.srv.Send() <- req.Message:
+	case bot.s.Transport.Send() <- req.Message:
 	case <-ctx.Done():
 		return ctx.Err()
 	}
