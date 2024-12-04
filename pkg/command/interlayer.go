@@ -2,7 +2,8 @@ package command
 
 import (
 	"context"
-	"github.com/RacoonMediaServer/rms-bot-client/internal/background"
+
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/background"
 	rms_bot_client "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-bot-client"
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -17,7 +18,8 @@ type MessageSender interface {
 }
 
 type Interlayer struct {
-	Services    servicemgr.ServiceFactory
-	TaskService TaskService
-	Messenger   MessageSender
+	Services       servicemgr.ServiceFactory
+	TaskService    TaskService
+	Messenger      MessageSender
+	ShareDirectory string
 }

@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/RacoonMediaServer/rms-bot-client/internal/config"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/command"
 	rms_bot_client "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-bot-client"
 	rms_transcoder "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-transcoder"
@@ -24,6 +23,7 @@ type task struct {
 	ui        uiVideoMessage
 	job       string
 	user      int32
+	dir       string
 }
 
 func (t task) Info() string {
@@ -59,7 +59,7 @@ func (t task) trySendVideo(ctx context.Context) (bool, error) {
 		msg[0].User = t.user
 		return true, t.messenger.SendMessage(ctx, &rms_bot_client.SendMessageRequest{Message: msg[0]}, &emptypb.Empty{})
 	case rms_transcoder.GetJobResponse_Done:
-		content, err := os.ReadFile(filepath.Join(config.Config().ContentDirectory, resp.Destination))
+		content, err := os.ReadFile(filepath.Join(t.dir, resp.Destination))
 		if err != nil {
 			return true, err
 		}

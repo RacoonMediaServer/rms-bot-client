@@ -1,19 +1,16 @@
 package config
 
-import "github.com/RacoonMediaServer/rms-packages/pkg/configuration"
+import (
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/session"
+	"github.com/RacoonMediaServer/rms-packages/pkg/configuration"
+)
 
 // Remote is a settings for connection to rms-bot-server service
-type Remote struct {
-	Scheme string
-	Host   string
-	Port   int
-	Path   string
-}
 
 // Configuration represents entire service configuration
 type Configuration struct {
 	Device           string
-	Remote           Remote
+	Remote           session.Endpoint
 	ContentDirectory string `json:"content-directory"`
 	VoiceRecognition bool   `json:"voice-recognition"`
 }

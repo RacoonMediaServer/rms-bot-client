@@ -3,12 +3,12 @@ package session
 import (
 	"context"
 	"fmt"
-	"github.com/RacoonMediaServer/rms-bot-client/internal/config"
+	"net/url"
+	"sync"
+
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	"github.com/gorilla/websocket"
 	"go-micro.dev/v4/logger"
-	"net/url"
-	"sync"
 )
 
 const maxMessagesInQueue = 50
@@ -28,7 +28,7 @@ type Session struct {
 	outgoing chan *communication.BotMessage
 }
 
-func New(endpoint config.Remote, deviceID string) *Session {
+func New(endpoint Endpoint, deviceID string) *Session {
 	s := &Session{
 		l: logger.DefaultLogger.Fields(map[string]interface{}{"from": "session"}),
 		u: url.URL{

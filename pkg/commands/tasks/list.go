@@ -1,8 +1,8 @@
 package tasks
 
 import (
-	"github.com/RacoonMediaServer/rms-bot-client/internal/middleware"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/command"
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/middleware"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_notes "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-notes"
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"

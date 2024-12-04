@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 
-	"github.com/RacoonMediaServer/rms-bot-client/internal/background"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/cmdset"
 	"github.com/RacoonMediaServer/rms-bot-client/internal/config"
-	"github.com/RacoonMediaServer/rms-bot-client/internal/session"
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/background"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/bot"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/command"
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/session"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/speech"
 	rms_bot_client "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-bot-client"
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
@@ -64,8 +64,9 @@ func main() {
 	defer backService.Stop()
 
 	interlayer := command.Interlayer{
-		Services:    servicemgr.NewServiceFactory(service),
-		TaskService: backService,
+		Services:       servicemgr.NewServiceFactory(service),
+		TaskService:    backService,
+		ShareDirectory: cfg.ContentDirectory,
 	}
 
 	serverSession := session.New(cfg.Remote, cfg.Device)
