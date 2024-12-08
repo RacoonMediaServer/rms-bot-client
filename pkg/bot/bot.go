@@ -30,7 +30,7 @@ func New(settings Settings) *Bot {
 		chats: map[int32]*chat{},
 		code:  make(chan string),
 	}
-	settings.Interlayer.Messenger = bot
+	bot.s.Interlayer.Messenger = bot
 
 	bot.ctx, bot.cancel = context.WithCancel(context.Background())
 	bot.wg.Add(1)

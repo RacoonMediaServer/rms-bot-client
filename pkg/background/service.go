@@ -2,8 +2,10 @@ package background
 
 import (
 	"context"
-	"go-micro.dev/v4/logger"
+	"fmt"
 	"sync"
+
+	"go-micro.dev/v4/logger"
 )
 
 type Service struct {
@@ -28,12 +30,23 @@ func (s *Service) StartTask(task Task) {
 		defer s.wg.Done()
 		l := s.l.Fields(map[string]interface{}{"task": task.Info()})
 		l.Logf(logger.InfoLevel, "Start task")
-		if err := task.Run(s.ctx, l); err != nil {
+		if err := s.safeTaskRun(task, l); err != nil {
 			l.Logf(logger.ErrorLevel, "Task done with error: %s", err)
 		} else {
 			l.Logf(logger.InfoLevel, "Task done")
 		}
 	}(task)
+}
+
+func (s *Service) safeTaskRun(task Task, l logger.Logger) error {
+	var err error
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %s", r)
+		}
+	}()
+	err = task.Run(s.ctx, l)
+	return err
 }
 
 func (s *Service) Stop() {
