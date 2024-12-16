@@ -20,7 +20,10 @@ type defaultFactory struct {
 }
 
 // NewCommand implements Factory.
-func (d *defaultFactory) NewCommand(commandID string, interlayer command.Interlayer, l logger.Logger) (command.Command, error) {
+func (d defaultFactory) NewCommand(commandID string, interlayer command.Interlayer, l logger.Logger) (command.Command, error) {
+	if commandID == helpCommandType.ID {
+		return &helpCommand{cmds: d.cmds}, nil
+	}
 	cmd, ok := d.cmds[commandID]
 	if !ok {
 		return nil, ErrCommandNotFound
@@ -29,7 +32,6 @@ func (d *defaultFactory) NewCommand(commandID string, interlayer command.Interla
 }
 
 func NewDefaultFactory(registeredCommands RegisteredCommands) Factory {
-	registeredCommands[helpCommandType.ID] = helpCommandType
 	return &defaultFactory{cmds: registeredCommands}
 }
 
