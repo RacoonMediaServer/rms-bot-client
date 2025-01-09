@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
-	rms_library "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-library"
-	"go-micro.dev/v4/logger"
 	"strings"
 	"text/template"
 	"unicode/utf8"
+
+	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
+	rms_library "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-library"
+	"go-micro.dev/v4/logger"
 )
 
 //go:embed templates
@@ -62,8 +63,10 @@ func (s *searchCommand) formatMovieMessage(mov *rms_library.FoundMovie) *communi
 	}
 
 	m.Buttons = append(m.Buttons, &communication.Button{Title: "Скачать", Command: "/download auto " + mov.Id})
-	m.Buttons = append(m.Buttons, &communication.Button{Title: "Скачать быстрее", Command: "/download faster " + mov.Id})
-	m.Buttons = append(m.Buttons, &communication.Button{Title: "Выбрать раздачу", Command: "/download select " + mov.Id})
+	// Команда временно не имеет смысла
+	// m.Buttons = append(m.Buttons, &communication.Button{Title: "Быстро", Command: "/download faster " + mov.Id})
+	m.Buttons = append(m.Buttons, &communication.Button{Title: "Выбрать", Command: "/download select " + mov.Id})
+	m.Buttons = append(m.Buttons, &communication.Button{Title: "Добавить", Command: "/watchlist add " + mov.Id})
 	m.Buttons = append(m.Buttons, &communication.Button{Title: "Файл", Command: "/download file " + mov.Id})
 
 	m.KeyboardStyle = communication.KeyboardStyle_Message

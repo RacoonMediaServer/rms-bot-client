@@ -15,6 +15,7 @@ import (
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/tasks"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/unlink"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/updates"
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/watchlist"
 )
 
 func New() commands.Factory {
@@ -33,6 +34,7 @@ func New() commands.Factory {
 		tasks.ListCommand,
 		unlink.Command,
 		updates.Command,
+		watchlist.Command,
 	}
 
 	cmds := commands.MakeRegisteredCommands(list...)

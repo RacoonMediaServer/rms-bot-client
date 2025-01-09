@@ -3,7 +3,7 @@ module github.com/RacoonMediaServer/rms-bot-client
 go 1.20
 
 require (
-	github.com/RacoonMediaServer/rms-packages v1.14.6
+	github.com/RacoonMediaServer/rms-packages v1.15.3
 	github.com/go-micro/plugins/v4/registry/etcd v1.2.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0
@@ -11,8 +11,6 @@ require (
 	github.com/urfave/cli/v2 v2.3.0
 	go-micro.dev/v4 v4.9.0
 	google.golang.org/protobuf v1.28.1
-	gorm.io/driver/postgres v1.4.7
-	gorm.io/gorm v1.24.5
 )
 
 require (
@@ -37,13 +35,9 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
-	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
-	github.com/jackc/pgx/v5 v5.2.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
-	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
+	github.com/kr/pretty v0.3.0 // indirect
 	github.com/miekg/dns v1.1.43 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/hashstructure v1.1.0 // indirect
