@@ -26,7 +26,7 @@ func (r *removeCommand) Do(ctx command.Context) (bool, []*communication.BotMessa
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 
-	if _, err := r.f.NewLibrary().DeleteMovie(ctx, &rms_library.DeleteMovieRequest{ID: ctx.Arguments[0]}); err != nil {
+	if _, err := r.f.NewMovies().Delete(ctx, &rms_library.DeleteRequest{ID: ctx.Arguments[0]}); err != nil {
 		r.l.Logf(logger.ErrorLevel, "Remove movie failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
 	}

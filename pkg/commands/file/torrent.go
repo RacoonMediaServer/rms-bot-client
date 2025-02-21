@@ -43,7 +43,7 @@ func (t *torrentFileHandler) Do(ctx command.Context) (bool, []*communication.Bot
 			return false, command.ReplyText("Название не должно быть пустым")
 		}
 
-		libraryService := t.f.NewLibrary()
+		libraryService := t.f.NewMovies()
 		req := rms_library.UploadMovieRequest{
 			Id: "internal:" + uuid.NewString(),
 			Info: &rms_library.MovieInfo{
@@ -53,7 +53,7 @@ func (t *torrentFileHandler) Do(ctx command.Context) (bool, []*communication.Bot
 			TorrentFile: t.content,
 		}
 
-		_, err := libraryService.UploadMovie(ctx, &req, client.WithRequestTimeout(requestTimeout))
+		_, err := libraryService.Upload(ctx, &req, client.WithRequestTimeout(requestTimeout))
 		if err != nil {
 			t.l.Logf(logger.ErrorLevel, "Upload movie failed: %s", err)
 			return true, command.ReplyText(command.SomethingWentWrong)

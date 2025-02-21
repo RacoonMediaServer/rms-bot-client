@@ -73,7 +73,7 @@ func (d *downloadCommand) doInitial(ctx command.Context) (bool, []*communication
 
 	d.id = ctx.Arguments[1]
 
-	result, err := d.f.NewLibrary().GetMovie(ctx, &rms_library.GetMovieRequest{ID: d.id})
+	result, err := d.f.NewMovies().Get(ctx, &rms_library.GetMovieRequest{ID: d.id})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Retrieve info about media failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
@@ -122,7 +122,7 @@ func (d *downloadCommand) downloadAuto(ctx command.Context) (bool, []*communicat
 		req.Season = &season
 	}
 
-	resp, err := d.f.NewLibrary().DownloadMovieAuto(ctx, req, client.WithRequestTimeout(requestTimeout))
+	resp, err := d.f.NewMovies().DownloadAuto(ctx, req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "request to library failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
@@ -149,7 +149,7 @@ func (d *downloadCommand) downloadSelect(ctx command.Context) (bool, []*communic
 		req.Season = &season
 	}
 
-	resp, err := d.f.NewLibrary().FindMovieTorrents(ctx, &req, client.WithRequestTimeout(requestTimeout))
+	resp, err := d.f.NewMovies().FindTorrents(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		return true, command.ReplyText(command.SomethingWentWrong)
 	}
@@ -198,7 +198,7 @@ func (d *downloadCommand) doChooseTorrent(ctx command.Context) (bool, []*communi
 
 	id := d.torrents[no-1]
 
-	_, err = d.f.NewLibrary().DownloadTorrent(ctx, &rms_library.DownloadTorrentRequest{TorrentId: id}, client.WithRequestTimeout(requestTimeout))
+	_, err = d.f.NewMovies().Download(ctx, &rms_library.DownloadTorrentRequest{TorrentId: id}, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Download request failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
@@ -220,7 +220,7 @@ func (d *downloadCommand) doWaitFile(ctx command.Context) (bool, []*communicatio
 		Info:        d.mov.Info,
 		TorrentFile: ctx.Attachment.Content,
 	}
-	_, err := d.f.NewLibrary().UploadMovie(ctx, &req, client.WithRequestTimeout(requestTimeout))
+	_, err := d.f.NewMovies().Upload(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Upload request failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)

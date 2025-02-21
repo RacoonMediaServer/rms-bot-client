@@ -30,7 +30,7 @@ func (s *searchCommand) Do(ctx command.Context) (done bool, messages []*communic
 		return false, command.ReplyText("Что ищем?")
 	}
 
-	resp, err := s.f.NewLibrary().SearchMovie(ctx, &rms_library.SearchMovieRequest{Text: ctx.Arguments.String(), Limit: searchMoviesLimit}, client.WithRequestTimeout(1*time.Minute))
+	resp, err := s.f.NewMovies().Search(ctx, &rms_library.SearchRequest{Text: ctx.Arguments.String(), Limit: searchMoviesLimit}, client.WithRequestTimeout(1*time.Minute))
 	if err != nil {
 		s.l.Logf(logger.ErrorLevel, "SearchMovie failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)

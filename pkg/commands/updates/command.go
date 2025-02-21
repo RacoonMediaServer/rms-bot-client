@@ -22,7 +22,7 @@ type updatesCommand struct {
 }
 
 func (u *updatesCommand) Do(ctx command.Context) (bool, []*communication.BotMessage) {
-	resp, err := u.f.NewLibrary().GetTvSeriesUpdates(ctx, &emptypb.Empty{}, client.WithRequestTimeout(command.LongRequestTimeout))
+	resp, err := u.f.NewMovies().GetTvSeriesUpdates(ctx, &emptypb.Empty{}, client.WithRequestTimeout(command.LongRequestTimeout))
 	if err != nil {
 		u.l.Logf(logger.ErrorLevel, "Get TV-series updates failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)

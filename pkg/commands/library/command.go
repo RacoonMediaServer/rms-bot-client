@@ -53,7 +53,7 @@ func (s *libraryCommand) Do(ctx command.Context) (bool, []*communication.BotMess
 		return false, command.ReplyText("Неверная категория")
 	}
 
-	resp, err := s.f.NewLibrary().GetMovies(ctx, &rms_library.GetMoviesRequest{Type: &movieType})
+	resp, err := s.f.NewMovies().List(ctx, &rms_library.GetMoviesRequest{Type: &movieType})
 	if err != nil {
 		s.l.Logf(logger.ErrorLevel, "Get movies failed: %s", err)
 		return false, command.ReplyText(command.SomethingWentWrong)

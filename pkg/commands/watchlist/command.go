@@ -32,7 +32,7 @@ func (c watchListCommand) Do(ctx command.Context) (bool, []*communication.BotMes
 	}
 
 	id := ctx.Arguments[1]
-	_, err := c.f.NewLibrary().WatchLater(ctx, &rms_library.WatchLaterRequest{Id: id}, client.WithRequestTimeout(requestTimeout))
+	_, err := c.f.NewMovies().WatchLater(ctx, &rms_library.WatchLaterRequest{Id: id}, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		c.l.Logf(logger.ErrorLevel, "Add to watchlist ailed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
