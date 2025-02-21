@@ -2,6 +2,7 @@ package library
 
 import (
 	"fmt"
+
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_library "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-library"
 )
@@ -18,6 +19,10 @@ func formatMovie(mov *rms_library.Movie) *communication.BotMessage {
 	msg.Buttons = append(msg.Buttons, &communication.Button{
 		Title:   "Удалить",
 		Command: "/remove " + mov.Id,
+	})
+	msg.Buttons = append(msg.Buttons, &communication.Button{
+		Title:   "Докачать",
+		Command: "/download watchlist " + mov.Id,
 	})
 
 	return &msg

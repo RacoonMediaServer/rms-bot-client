@@ -33,16 +33,17 @@ const requestTimeout = 2 * time.Minute
 const maxTorrents uint32 = 8
 
 type downloadCommand struct {
-	f        servicemgr.ServiceFactory
-	l        logger.Logger
-	state    state
-	stateMap map[state]command.Handler
-	download command.Handler
-	faster   bool
-	id       string
-	season   *uint
-	torrents []string
-	mov      *rms_library.Movie
+	f         servicemgr.ServiceFactory
+	l         logger.Logger
+	state     state
+	stateMap  map[state]command.Handler
+	download  command.Handler
+	faster    bool
+	watchlist bool
+	id        string
+	season    *uint
+	torrents  []string
+	mov       *rms_library.Movie
 }
 
 func (d *downloadCommand) Do(ctx command.Context) (done bool, messages []*communication.BotMessage) {
@@ -66,6 +67,10 @@ func (d *downloadCommand) doInitial(ctx command.Context) (bool, []*communication
 
 	case "file":
 		d.download = d.downloadFile
+
+	case "watchlist":
+		d.download = d.downloadAuto
+		d.watchlist = true
 
 	default:
 		return true, command.ReplyText(command.ParseArgumentsFailed)
@@ -114,8 +119,9 @@ func (d *downloadCommand) doInitial(ctx command.Context) (bool, []*communication
 
 func (d *downloadCommand) downloadAuto(ctx command.Context) (bool, []*communication.BotMessage) {
 	req := &rms_library.DownloadMovieAutoRequest{
-		Id:     d.id,
-		Faster: d.faster,
+		Id:           d.id,
+		Faster:       d.faster,
+		UseWatchList: d.watchlist,
 	}
 	if d.season != nil {
 		season := uint32(*d.season)
