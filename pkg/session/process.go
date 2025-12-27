@@ -2,16 +2,22 @@ package session
 
 import (
 	"context"
+	"net/http"
+	"sync"
+	"time"
+
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 	"go-micro.dev/v4/logger"
-	"net/http"
-	"sync"
-	"time"
 )
 
-const reconnectTimeout = 10 * time.Second
+const (
+	reconnectTimeout = 10 * time.Second
+	pingPeriod       = 30 * time.Second
+	pongWait         = 60 * time.Second
+	writeWait        = 10 * time.Second
+)
 
 func (s *Session) connect() error {
 	h := make(http.Header)
@@ -22,6 +28,11 @@ func (s *Session) connect() error {
 	if err != nil {
 		return err
 	}
+	s.conn.SetReadDeadline(time.Now().Add(pongWait))
+	s.conn.SetPongHandler(func(string) error {
+		s.conn.SetReadDeadline(time.Now().Add(pongWait))
+		return nil
+	})
 
 	return nil
 }
@@ -63,12 +74,22 @@ func (s *Session) process() {
 			s.readProcess(cancel)
 		}()
 
+		pingTimer := time.NewTicker(pingPeriod)
+		defer pingTimer.Stop()
+
 	handleMessages:
 		for {
 			select {
 			case msg := <-s.outgoing:
+				s.conn.SetWriteDeadline(time.Now().Add(writeWait))
 				if err := s.send(msg); err != nil {
 					s.l.Logf(logger.ErrorLevel, "Send message failed: %s", err)
+					break handleMessages
+				}
+			case <-pingTimer.C:
+				s.conn.SetWriteDeadline(time.Now().Add(writeWait))
+				if err := s.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+					s.l.Logf(logger.ErrorLevel, "Send ping failed: %s", err)
 					break handleMessages
 				}
 			case <-s.ctx.Done():
