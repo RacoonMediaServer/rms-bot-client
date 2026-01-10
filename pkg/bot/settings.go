@@ -23,4 +23,5 @@ type Settings struct {
 	Interlayer       command.Interlayer
 	CmdFactory       commands.Factory
 	SpeechRecognizer SpeechRecognizer
+	FallbackCommand  string
 }

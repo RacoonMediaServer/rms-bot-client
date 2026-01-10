@@ -34,7 +34,7 @@ func (bot *Bot) incomingMessage(msg *communication.UserMessage) {
 			}
 			bot.s.Transport.Send() <- m
 		}
-		chat = newChat(bot.s.CmdFactory, msg.User, bot.s.Interlayer, fn)
+		chat = newChat(bot.s.CmdFactory, msg.User, bot.s.Interlayer, fn, bot.s.FallbackCommand)
 		chat.recognizer = bot.s.SpeechRecognizer
 		bot.chats[msg.User] = chat
 	}
