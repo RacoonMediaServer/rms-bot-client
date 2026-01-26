@@ -62,12 +62,9 @@ func (s *searchCommand) formatMovieMessage(mov *rms_library.FoundMovie) *communi
 		}
 	}
 
-	m.Buttons = append(m.Buttons, &communication.Button{Title: "Скачать", Command: "/download auto " + mov.Id})
-	// Команда временно не имеет смысла
-	// m.Buttons = append(m.Buttons, &communication.Button{Title: "Быстро", Command: "/download faster " + mov.Id})
-	m.Buttons = append(m.Buttons, &communication.Button{Title: "Выбрать", Command: "/download select " + mov.Id})
-	m.Buttons = append(m.Buttons, &communication.Button{Title: "Добавить", Command: "/watchlist add " + mov.Id})
-	m.Buttons = append(m.Buttons, &communication.Button{Title: "Файл", Command: "/download file " + mov.Id})
+	m.Buttons = append(m.Buttons, &communication.Button{Title: "Добавить", Command: "/download auto " + mov.Id})
+	m.Buttons = append(m.Buttons, &communication.Button{Title: "Выбрать раздачу", Command: "/download select " + mov.Id})
+	m.Buttons = append(m.Buttons, &communication.Button{Title: "Из файла", Command: "/download file " + mov.Id})
 
 	m.KeyboardStyle = communication.KeyboardStyle_Message
 

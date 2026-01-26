@@ -38,7 +38,7 @@ func (d *downloadsCommand) Do(ctx command.Context) (bool, []*communication.BotMe
 }
 
 func (d *downloadsCommand) doList(ctx command.Context) (bool, []*communication.BotMessage) {
-	resp, err := d.f.NewTorrent().GetTorrents(ctx, &rms_torrent.GetTorrentsRequest{IncludeDoneTorrents: false})
+	resp, err := d.f.NewTorrent(false).GetTorrents(ctx, &rms_torrent.GetTorrentsRequest{IncludeDoneTorrents: false})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Get torrents failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
@@ -58,7 +58,7 @@ func (d *downloadsCommand) doRemove(ctx command.Context) (bool, []*communication
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 
-	_, err := d.f.NewTorrent().RemoveTorrent(ctx, &rms_torrent.RemoveTorrentRequest{Id: ctx.Arguments[0]})
+	_, err := d.f.NewTorrent(false).RemoveTorrent(ctx, &rms_torrent.RemoveTorrentRequest{Id: ctx.Arguments[0]})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Remove torrent failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
@@ -71,7 +71,7 @@ func (d *downloadsCommand) doUp(ctx command.Context) (bool, []*communication.Bot
 		return true, command.ReplyText("Не удалось распознать параметры команды")
 	}
 
-	_, err := d.f.NewTorrent().UpPriority(ctx, &rms_torrent.UpPriorityRequest{Id: ctx.Arguments[0]})
+	_, err := d.f.NewTorrent(false).UpPriority(ctx, &rms_torrent.UpPriorityRequest{Id: ctx.Arguments[0]})
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Up torrent failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)

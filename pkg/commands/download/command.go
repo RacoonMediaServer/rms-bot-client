@@ -25,6 +25,7 @@ type state int
 const (
 	stateInitial state = iota
 	stateChooseSeason
+	stateChooseAction
 	stateChooseTorrent
 	stateWaitFile
 )
@@ -38,12 +39,12 @@ type downloadCommand struct {
 	state     state
 	stateMap  map[state]command.Handler
 	download  command.Handler
-	faster    bool
-	watchlist bool
+	action    action
 	id        string
 	season    *uint
 	torrents  []string
 	mov       *rms_library.Movie
+	watchlist bool
 }
 
 func (d *downloadCommand) Do(ctx command.Context) (done bool, messages []*communication.BotMessage) {
@@ -57,10 +58,6 @@ func (d *downloadCommand) doInitial(ctx command.Context) (bool, []*communication
 	switch ctx.Arguments[0] {
 	case "auto":
 		d.download = d.downloadAuto
-
-	case "faster":
-		d.download = d.downloadAuto
-		d.faster = true
 
 	case "select":
 		d.download = d.downloadSelect
@@ -92,7 +89,7 @@ func (d *downloadCommand) doInitial(ctx command.Context) (bool, []*communication
 	d.mov = result.Result
 
 	if mov.Info.Type != rms_library.MovieType_TvSeries || mov.Info.Seasons == nil || ctx.Arguments[0] == "file" {
-		return d.download(ctx)
+		return d.chooseAction(ctx)
 	}
 
 	d.state = stateChooseSeason
@@ -117,10 +114,45 @@ func (d *downloadCommand) doInitial(ctx command.Context) (bool, []*communication
 	return false, []*communication.BotMessage{&msg}
 }
 
+func (d *downloadCommand) chooseAction(ctx command.Context) (bool, []*communication.BotMessage) {
+	d.state = stateChooseAction
+	msg := communication.BotMessage{Text: "Добавить как?"}
+	msg.KeyboardStyle = communication.KeyboardStyle_Chat
+	msg.Buttons = []*communication.Button{}
+	for a := actionDownload; a <= actionAdd; a++ {
+		msg.Buttons = append(msg.Buttons, &communication.Button{
+			Title:   a.String(),
+			Command: a.String(),
+		})
+	}
+
+	return false, []*communication.BotMessage{&msg}
+}
+
+func (d *downloadCommand) doChooseAction(ctx command.Context) (bool, []*communication.BotMessage) {
+	action, ok := actionFromString(ctx.Arguments.String())
+	if !ok {
+		return d.chooseAction(ctx)
+	}
+	d.action = action
+
+	if d.action == actionAdd {
+		_, err := d.f.NewMovies().WatchLater(ctx, &rms_library.WatchLaterRequest{Id: d.id}, client.WithRequestTimeout(requestTimeout))
+		if err != nil {
+			d.l.Logf(logger.ErrorLevel, "Add to watchlist failed: %s", err)
+			return true, command.ReplyText(command.SomethingWentWrong)
+		}
+
+		return true, command.ReplyText("Добавлено. В списке отложенных контент появится с опозданием")
+	}
+
+	return d.download(ctx)
+}
+
 func (d *downloadCommand) downloadAuto(ctx command.Context) (bool, []*communication.BotMessage) {
 	req := &rms_library.DownloadMovieAutoRequest{
 		Id:           d.id,
-		Faster:       d.faster,
+		WatchOnline:  d.action == actionOnline,
 		UseWatchList: d.watchlist,
 	}
 	if d.season != nil {
@@ -139,10 +171,10 @@ func (d *downloadCommand) downloadAuto(ctx command.Context) (bool, []*communicat
 	}
 
 	if len(resp.Seasons) <= 1 {
-		return true, command.ReplyText("Скачивание началось")
+		return true, command.ReplyText(d.action.SuccessMessage())
 	}
 
-	return true, command.ReplyText("Удалось найти сезоны " + formatSeasons(resp.Seasons) + ". Скачивание началось")
+	return true, command.ReplyText("Удалось найти сезоны " + formatSeasons(resp.Seasons) + ". " + d.action.SuccessMessage())
 }
 
 func (d *downloadCommand) downloadSelect(ctx command.Context) (bool, []*communication.BotMessage) {
@@ -181,7 +213,7 @@ func (d *downloadCommand) doChooseSeason(ctx command.Context) (bool, []*communic
 		return false, command.ReplyText("Необходимо выбрать сезон")
 	}
 	if ctx.Arguments[0] == "Все" {
-		return d.download(ctx)
+		return d.chooseAction(ctx)
 	}
 	season, err := strconv.ParseUint(ctx.Arguments[0], 10, 8)
 	if err != nil {
@@ -190,7 +222,7 @@ func (d *downloadCommand) doChooseSeason(ctx command.Context) (bool, []*communic
 	s := uint(season)
 	d.season = &s
 
-	return d.download(ctx)
+	return d.chooseAction(ctx)
 }
 
 func (d *downloadCommand) doChooseTorrent(ctx command.Context) (bool, []*communication.BotMessage) {
@@ -204,13 +236,18 @@ func (d *downloadCommand) doChooseTorrent(ctx command.Context) (bool, []*communi
 
 	id := d.torrents[no-1]
 
-	_, err = d.f.NewMovies().Download(ctx, &rms_library.DownloadTorrentRequest{TorrentId: id}, client.WithRequestTimeout(requestTimeout))
+	req := rms_library.DownloadTorrentRequest{
+		TorrentId:   id,
+		WatchOnline: d.action == actionOnline,
+	}
+
+	_, err = d.f.NewMovies().Download(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
 		d.l.Logf(logger.ErrorLevel, "Download request failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 
-	return true, command.ReplyText("Скачивание началось")
+	return true, command.ReplyText(d.action.SuccessMessage())
 }
 
 func (d *downloadCommand) doWaitFile(ctx command.Context) (bool, []*communication.BotMessage) {
@@ -225,6 +262,7 @@ func (d *downloadCommand) doWaitFile(ctx command.Context) (bool, []*communicatio
 		Id:          d.mov.Id,
 		Info:        d.mov.Info,
 		TorrentFile: ctx.Attachment.Content,
+		WatchOnline: d.action == actionOnline,
 	}
 	_, err := d.f.NewMovies().Upload(ctx, &req, client.WithRequestTimeout(requestTimeout))
 	if err != nil {
@@ -232,7 +270,7 @@ func (d *downloadCommand) doWaitFile(ctx command.Context) (bool, []*communicatio
 		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 
-	return true, command.ReplyText("Скачивание началось")
+	return true, command.ReplyText(d.action.SuccessMessage())
 }
 
 func New(interlayer command.Interlayer, l logger.Logger) command.Command {
@@ -244,6 +282,7 @@ func New(interlayer command.Interlayer, l logger.Logger) command.Command {
 	d.stateMap = map[state]command.Handler{
 		stateInitial:       d.doInitial,
 		stateChooseSeason:  d.doChooseSeason,
+		stateChooseAction:  d.doChooseAction,
 		stateChooseTorrent: d.doChooseTorrent,
 		stateWaitFile:      d.doWaitFile,
 	}
