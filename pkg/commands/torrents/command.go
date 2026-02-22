@@ -90,7 +90,7 @@ func (t *torrentsCommand) listTorrents(ctx command.Context, id string) (bool, []
 		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 
-	logger.Info("Found %d torrents for id %s", len(resp.Torrents), id)
+	logger.Infof("Found %d torrents for id %s", len(resp.Torrents), id)
 
 	messages := []*communication.BotMessage{newAddMessage(id)}
 
