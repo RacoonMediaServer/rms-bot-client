@@ -40,7 +40,7 @@ func (r *removeCommand) Do(ctx command.Context) (bool, []*communication.BotMessa
 		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 
-	return true, command.ReplyText(command.Removed)
+	return true, command.ReplyText("Перемещено")
 }
 
 func New(interlayer command.Interlayer, l logger.Logger) command.Command {
