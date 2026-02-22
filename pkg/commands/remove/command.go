@@ -1,6 +1,8 @@
 package remove
 
 import (
+	"strconv"
+
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/command"
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_library "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-library"
@@ -10,8 +12,8 @@ import (
 
 var Command command.Type = command.Type{
 	ID:       "remove",
-	Title:    "Удалить",
-	Help:     "Удаление фильмов и сериалов",
+	Title:    "Переместить",
+	Help:     "Перемещение между списка",
 	Factory:  New,
 	Internal: true,
 }
@@ -22,12 +24,19 @@ type removeCommand struct {
 }
 
 func (r *removeCommand) Do(ctx command.Context) (bool, []*communication.BotMessage) {
-	if len(ctx.Arguments) != 1 {
+	if len(ctx.Arguments) != 2 {
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
+	id := ctx.Arguments[0]
+	listInt, err := strconv.ParseInt(id, 10, 32)
+	if err != nil {
+		r.l.Logf(logger.ErrorLevel, "Parse list failed: %s", err)
+		return true, command.ReplyText(command.SomethingWentWrong)
+	}
+	list := rms_library.List(listInt)
 
-	if _, err := r.f.NewMovies().Delete(ctx, &rms_library.DeleteRequest{ID: ctx.Arguments[0]}); err != nil {
-		r.l.Logf(logger.ErrorLevel, "Remove movie failed: %s", err)
+	if _, err := r.f.NewLists().Move(ctx, &rms_library.ListsMoveRequest{Id: id, List: list}); err != nil {
+		r.l.Logf(logger.ErrorLevel, "Move movie failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 

@@ -1,7 +1,8 @@
-package download
+package add
 
 import (
 	"fmt"
+
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_library "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-library"
 )

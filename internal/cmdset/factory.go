@@ -3,8 +3,8 @@ package cmdset
 import (
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/command"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands"
+	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/add"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/archive"
-	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/download"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/downloads"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/file"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/library"
@@ -14,15 +14,12 @@ import (
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/snapshot"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/tasks"
 	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/unlink"
-	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/updates"
-	"github.com/RacoonMediaServer/rms-bot-client/pkg/commands/watchlist"
 )
 
 func New() commands.Factory {
 	list := []command.Type{
 		archive.Command,
 		//cctv.Command,
-		download.Command,
 		downloads.Command,
 		file.Command,
 		library.Command,
@@ -33,8 +30,7 @@ func New() commands.Factory {
 		tasks.AddCommand,
 		tasks.ListCommand,
 		unlink.Command,
-		updates.Command,
-		watchlist.Command,
+		add.Command,
 	}
 
 	cmds := commands.MakeRegisteredCommands(list...)

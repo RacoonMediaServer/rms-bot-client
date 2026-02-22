@@ -7,23 +7,38 @@ import (
 	rms_library "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-library"
 )
 
-func formatMovie(mov *rms_library.Movie) *communication.BotMessage {
+func formatMovie(item *rms_library.ListItem, list rms_library.List) *communication.BotMessage {
 	msg := communication.BotMessage{}
-	msg.Text = fmt.Sprintf("<b>%s (%d)</b>", mov.Info.Title, mov.Info.Year)
+	msg.Text = fmt.Sprintf("<b>%s</b>", item.Title)
 
-	if mov.TvSeries != nil {
-		msg.Text += fmt.Sprintf("\nСкачано сезонов: %d", len(mov.TvSeries.Seasons))
-	}
-	msg.Text += fmt.Sprintf("\nЗанимаемое место: %.02f Гб", float64(mov.Size)/float64(1024))
+	msg.Text += fmt.Sprintf("\nЗанимаемое место: %.02f Гб", float64(item.Size)/float64(1024))
 	msg.KeyboardStyle = communication.KeyboardStyle_Message
+
 	msg.Buttons = append(msg.Buttons, &communication.Button{
-		Title:   "Удалить",
-		Command: "/remove " + mov.Id,
+		Title:   "Раздачи",
+		Command: fmt.Sprintf("/torrents %s", item.Id),
 	})
-	msg.Buttons = append(msg.Buttons, &communication.Button{
-		Title:   "Докачать",
-		Command: "/download watchlist " + mov.Id,
-	})
+
+	if list != rms_library.List_Favourites {
+		msg.Buttons = append(msg.Buttons, &communication.Button{
+			Title:   "В избранное",
+			Command: fmt.Sprintf("/remove %s %d", item.Id, rms_library.List_Favourites),
+		})
+	}
+
+	if list != rms_library.List_WatchList {
+		msg.Buttons = append(msg.Buttons, &communication.Button{
+			Title:   "К просмотру",
+			Command: fmt.Sprintf("/remove %s %d", item.Id, rms_library.List_WatchList),
+		})
+	}
+
+	if list != rms_library.List_Archive {
+		msg.Buttons = append(msg.Buttons, &communication.Button{
+			Title:   "В архив",
+			Command: fmt.Sprintf("/remove %s %d", item.Id, rms_library.List_Archive),
+		})
+	}
 
 	return &msg
 }

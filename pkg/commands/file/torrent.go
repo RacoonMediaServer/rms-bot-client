@@ -7,7 +7,6 @@ import (
 	"github.com/RacoonMediaServer/rms-packages/pkg/communication"
 	rms_library "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-library"
 	"github.com/RacoonMediaServer/rms-packages/pkg/service/servicemgr"
-	"github.com/google/uuid"
 	"go-micro.dev/v4/client"
 	"go-micro.dev/v4/logger"
 )
@@ -44,22 +43,20 @@ func (t *torrentFileHandler) Do(ctx command.Context) (bool, []*communication.Bot
 		}
 
 		libraryService := t.f.NewMovies()
-		req := rms_library.UploadMovieRequest{
-			Id: "internal:" + uuid.NewString(),
-			Info: &rms_library.MovieInfo{
-				Title: ctx.Arguments.String(),
-				Type:  rms_library.MovieType_Clip,
-			},
-			TorrentFile: t.content,
+
+		req := rms_library.MoviesAddClipRequest{
+			Title:   &ctx.Arguments[0],
+			Torrent: t.content,
+			List:    rms_library.List_WatchList,
 		}
 
-		_, err := libraryService.Upload(ctx, &req, client.WithRequestTimeout(requestTimeout))
+		_, err := libraryService.AddClip(ctx, &req, client.WithRequestTimeout(requestTimeout))
 		if err != nil {
-			t.l.Logf(logger.ErrorLevel, "Upload movie failed: %s", err)
+			t.l.Logf(logger.ErrorLevel, "Upload clip failed: %s", err)
 			return true, command.ReplyText(command.SomethingWentWrong)
 		}
 
-		return true, command.ReplyText("Загрузка началась")
+		return true, command.ReplyText("Добавлено к просмотру")
 	}
 
 	return true, command.ReplyText(command.SomethingWentWrong)
