@@ -34,6 +34,7 @@ const (
 	stateInitial state = iota
 	stateChoseSeason
 	stateChooseTorrent
+	stateWaitFile
 )
 
 func (t *torrentsCommand) Do(ctx command.Context) (bool, []*communication.BotMessage) {
@@ -44,6 +45,8 @@ func (t *torrentsCommand) Do(ctx command.Context) (bool, []*communication.BotMes
 		return t.doSeasonChoice(ctx)
 	case stateChooseTorrent:
 		return t.doTorrentChoice(ctx)
+	case stateWaitFile:
+		return t.doWaitFile(ctx)
 	default:
 		return true, command.ReplyText(command.SomethingWentWrong)
 	}
@@ -69,6 +72,10 @@ func (t *torrentsCommand) doStateInitial(ctx command.Context) (bool, []*communic
 		return t.removeTorrent(ctx, id, ctx.Arguments.String())
 	case "add":
 		return t.addTorrent(ctx, id)
+	case "file":
+		t.id = id
+		t.state = stateWaitFile
+		return false, command.ReplyText("Пришлите файл раздачи")
 	default:
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
@@ -195,6 +202,26 @@ func (t *torrentsCommand) doTorrentChoice(ctx command.Context) (bool, []*communi
 	_, err = t.f.NewTorrents().Add(ctx, &rms_library.TorrentsAddRequest{Id: t.id, Link: &torrent.Id})
 	if err != nil {
 		t.l.Logf(logger.ErrorLevel, "Torrents add failed: %s", err)
+		return true, command.ReplyText(command.SomethingWentWrong)
+	}
+
+	return true, command.ReplyText("Раздача добавлена")
+}
+
+func (t *torrentsCommand) doWaitFile(ctx command.Context) (bool, []*communication.BotMessage) {
+	if ctx.Attachment == nil {
+		return false, command.ReplyText("Пришлите файл раздачи")
+	}
+
+	if ctx.Attachment.MimeType != "application/x-bittorrent" {
+		return false, command.ReplyText("Неверный тип файла, ожидается .torrent")
+	}
+
+	content := ctx.Attachment.Content
+
+	_, err := t.f.NewTorrents().Add(ctx, &rms_library.TorrentsAddRequest{Id: t.id, TorrentFile: content})
+	if err != nil {
+		t.l.Logf(logger.ErrorLevel, "Torrents add by file failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
 	}
 

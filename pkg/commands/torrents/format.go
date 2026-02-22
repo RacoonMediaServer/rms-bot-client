@@ -12,10 +12,16 @@ func newAddMessage(id string) *communication.BotMessage {
 	msg.Text = "Список раздач"
 	msg.KeyboardStyle = communication.KeyboardStyle_Message
 
-	msg.Buttons = append(msg.Buttons, &communication.Button{
-		Title:   "Добавить",
-		Command: fmt.Sprintf("/torrents %s add", id),
-	})
+	msg.Buttons = []*communication.Button{
+		{
+			Title:   "Добавить",
+			Command: fmt.Sprintf("/torrents %s add", id),
+		},
+		{
+			Title:   "Файл",
+			Command: fmt.Sprintf("/torrents %s file", id),
+		},
+	}
 	return &msg
 }
 
