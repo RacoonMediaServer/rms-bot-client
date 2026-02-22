@@ -16,7 +16,7 @@ func formatMovie(item *rms_library.ListItem, list rms_library.List) *communicati
 
 	msg.Buttons = append(msg.Buttons, &communication.Button{
 		Title:   "Раздачи",
-		Command: fmt.Sprintf("/torrents %s", item.Id),
+		Command: fmt.Sprintf("/t %s", item.Id),
 	})
 
 	if list != rms_library.List_Favourites {

@@ -15,11 +15,11 @@ func newAddMessage(id string) *communication.BotMessage {
 	msg.Buttons = []*communication.Button{
 		{
 			Title:   "Добавить",
-			Command: fmt.Sprintf("/torrents %s add", id),
+			Command: fmt.Sprintf("/t %s add", id),
 		},
 		{
 			Title:   "Файл",
-			Command: fmt.Sprintf("/torrents %s file", id),
+			Command: fmt.Sprintf("/t %s file", id),
 		},
 	}
 	return &msg
@@ -32,7 +32,7 @@ func newTorrentMessage(id string, torrent *rms_library.Torrent) *communication.B
 
 	msg.Buttons = append(msg.Buttons, &communication.Button{
 		Title:   "Удалить",
-		Command: fmt.Sprintf("/torrents %s remove %s", id, torrent.Id),
+		Command: fmt.Sprintf("/t %s r %s", id, torrent.Id),
 	})
 	return &msg
 }

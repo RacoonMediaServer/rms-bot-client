@@ -13,7 +13,7 @@ import (
 )
 
 var Command command.Type = command.Type{
-	ID:       "torrents",
+	ID:       "t",
 	Title:    "Раздачи",
 	Help:     "Управление раздачами",
 	Factory:  New,
@@ -68,7 +68,7 @@ func (t *torrentsCommand) doStateInitial(ctx command.Context) (bool, []*communic
 	ctx.Arguments = ctx.Arguments[1:]
 
 	switch cmd {
-	case "remove":
+	case "r":
 		return t.removeTorrent(ctx, id, ctx.Arguments.String())
 	case "add":
 		return t.addTorrent(ctx, id)
