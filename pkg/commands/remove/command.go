@@ -28,7 +28,7 @@ func (r *removeCommand) Do(ctx command.Context) (bool, []*communication.BotMessa
 		return true, command.ReplyText(command.ParseArgumentsFailed)
 	}
 	id := ctx.Arguments[0]
-	listInt, err := strconv.ParseInt(id, 10, 32)
+	listInt, err := strconv.ParseInt(ctx.Arguments[1], 10, 32)
 	if err != nil {
 		r.l.Logf(logger.ErrorLevel, "Parse list failed: %s", err)
 		return true, command.ReplyText(command.SomethingWentWrong)
